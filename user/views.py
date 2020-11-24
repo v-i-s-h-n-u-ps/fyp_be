@@ -23,6 +23,7 @@ class Login(APIView):
             if serializer.is_valid():
                 data = serializer.data
                 user = User.objects.filter(email=data['email'])
+                print(data)
                 if not user.exists():
                     return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
@@ -35,6 +36,7 @@ class Login(APIView):
                         'client_secret': settings.CLIENT_SECRET,
                     }
                 )
+                print(res)
                 if res.status_code == status.HTTP_200_OK:
                     user.update(last_login=timezone.now())
                     user_data = self.user_serializer(user[0]).data
@@ -107,7 +109,6 @@ class SignUp(APIView):
                 custom_user = User(email=data['email'], password=make_password(data['password']),
                                    name=data['name'], mobile=data['mobile'])
                 custom_user.save()
-                self.register_helper(data['role'], custom_user)
                 return JsonResponse({"user": custom_user.pk}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

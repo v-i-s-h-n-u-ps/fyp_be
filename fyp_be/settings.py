@@ -148,5 +148,5 @@ CORS_ORIGIN_ALLOW_ALL = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-BASE_URL = 'http://127.0.0.1:8000/'
+BASE_URL = 'http://127.0.0.1:8080/'
 AUTH_USER_MODEL = 'user.User'
