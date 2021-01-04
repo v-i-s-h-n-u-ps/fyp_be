@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'user',
+    'resources',
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,8 @@ REST_FRAMEWORK = {
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 360000,
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 60 * 60 * 24 * 7,
+
 }
 
 PASSWORD_HASHERS = [
@@ -129,8 +132,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-CLIENT_ID = '3VE5F0zMLmSceSe754FsZ8CmbCgV34nzquUUbzqI'
-CLIENT_SECRET = 'u9ibNwhzbnL0qGXaTywO42BKtS4eHTFZgSAHbY4kT81CMD0SScjih2j8rXGgwLKyksv7yWh70J5vjbrWiKn2kwr1uc02pUMMmajR5S3jb1kFviby40vVLe5Yr10ylh1E'
+CLIENT_ID = 'mVeTFCId6GvchY9slCniKXb5jJidGm3zg3qXRkHx'
+CLIENT_SECRET = 'JbNobrdbHyssZaS3ePqCNXo2oWtzRlDsrTymAbWaF2SChfUxj2qd3ZdRcEElaJXERYhCq5ElcscC1dxbSeV3m1wm7phpkCthzXOnFTczFyRAimTDVEwfaUs8ydWvOxav'
 
 LANGUAGE_CODE = 'en-us'
 
@@ -148,5 +151,5 @@ CORS_ORIGIN_ALLOW_ALL = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-BASE_URL = 'http://127.0.0.1:8080/'
+BASE_URL = 'http://127.0.0.1:8000/'
 AUTH_USER_MODEL = 'user.User'

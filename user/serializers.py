@@ -11,7 +11,7 @@ class LoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'mobile']
+        fields = ['id', 'name', 'email']
 
 
 class RefreshTokenSerializer(serializers.Serializer):
@@ -25,5 +25,4 @@ class RevokeTokenSerializer(serializers.Serializer):
 class SignUpSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
-    mobile = serializers.CharField()
     password = serializers.CharField()

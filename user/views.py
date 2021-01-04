@@ -22,7 +22,7 @@ class Login(APIView):
 
             if serializer.is_valid():
                 data = serializer.data
-                user = User.objects.filter(email=data['email'])
+                user = User.objects.filter(email=data['email'], is_active=1)
                 if not user.exists():
                     return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
@@ -105,7 +105,7 @@ class SignUp(APIView):
             if serializer.is_valid():
                 data = serializer.data
                 custom_user = User(email=data['email'], password=make_password(data['password']),
-                                   name=data['name'], mobile=data['mobile'])
+                                   name=data['name'])
                 custom_user.save()
                 return JsonResponse({"user": custom_user.pk}, status=status.HTTP_201_CREATED)
             else:
