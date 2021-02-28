@@ -31,7 +31,7 @@ class ProjectCategory(Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.project.name + "::" + self.category.name
+        return self.project.name + " :: " + self.category.name
 
 
 class ProjectParticipant(Model):
@@ -42,7 +42,7 @@ class ProjectParticipant(Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.project.name + "::" + self.student.user.name
+        return self.project.name + " :: " + self.student.user.name
 
 
 class ProjectTask(Model):
@@ -57,4 +57,14 @@ class ProjectTask(Model):
 
     def __str__(self):
         return self.task
+
+
+class ProjectCount(Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    views = models.PositiveIntegerField(default=0)
+    trending_score = models.DecimalField(default=0.00, max_digits=7, decimal_places=2)
+
+    def __str__(self):
+        return self.project.name
 
