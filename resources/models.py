@@ -6,7 +6,7 @@ from django.db.models import Model
 
 class Role(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=25, unique=True)
 
     def __str__(self):
         return self.name
@@ -14,7 +14,7 @@ class Role(Model):
 
 class Type(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -22,7 +22,7 @@ class Type(Model):
 
 class Category(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=75)
+    name = models.CharField(max_length=75, unique=True)
 
     def __str__(self):
         return self.name

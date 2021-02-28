@@ -109,9 +109,8 @@ REST_FRAMEWORK = {
 }
 
 OAUTH2_PROVIDER = {
-    'ACCESS_TOKEN_EXPIRE_SECONDS': 360000,
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
     'REFRESH_TOKEN_EXPIRE_SECONDS': 60 * 60 * 24 * 7,
-
 }
 
 PASSWORD_HASHERS = [
@@ -142,8 +141,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-CLIENT_ID = 'mVeTFCId6GvchY9slCniKXb5jJidGm3zg3qXRkHx'
-CLIENT_SECRET = 'JbNobrdbHyssZaS3ePqCNXo2oWtzRlDsrTymAbWaF2SChfUxj2qd3ZdRcEElaJXERYhCq5ElcscC1dxbSeV3m1wm7phpkCthzXOnFTczFyRAimTDVEwfaUs8ydWvOxav'
+CLIENT_ID = 'smJLvtdyMaqumAo4uv9Xly3ozpiaYNayjVNW4uF2'
+CLIENT_SECRET = 'lQzhxMPsXyDRsbmVNejldiLPV3SEYNOkxmWWnAJDSN007Hr5yCmipgMdr7RW57V4hfRnG9LtReZnWO2kxM4fEPk9lUI0BZhIk9msWF1jn1Fx9DhOXxtHtUKfa7LTWFma'
 
 LANGUAGE_CODE = 'en-us'
 

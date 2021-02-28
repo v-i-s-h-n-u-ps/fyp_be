@@ -10,7 +10,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fyp_be import settings
-from user.serializers import *
+from resources.models import Role
+from user.models import User, OTP, UserRole
+from user.permissions import IsStudent
+from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerializer, RevokeTokenSerializer, \
+    SignUpSerializer, ActivateSerializer, PasswordResetTokenSerializer, PasswordResetSerializer, \
+    PasswordChangeSerializer
 
 
 def generateOTP(digits):
@@ -112,12 +117,17 @@ class SignUp(APIView):
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
+            print(serializer)
             if serializer.is_valid():
                 data = serializer.data
                 custom_user = User(email=data['email'], password=make_password(data['password']),
                                    name=data['name'])
+                role = Role.objects.get(name=data['role'])
                 custom_user.save()
-                return JsonResponse({"user": custom_user.pk}, status=status.HTTP_201_CREATED)
+                user_role = UserRole(user=custom_user, role=role)
+                print(custom_user, role)
+                user_role.save()
+                return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -198,7 +208,7 @@ class PasswordReset(APIView):
 
 
 class PasswordChange(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = PasswordChangeSerializer
 
     def post(self, request):

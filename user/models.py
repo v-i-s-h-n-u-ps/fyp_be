@@ -39,7 +39,7 @@ class OTP(Model):
         return str(self.user.id)
 
 
-class UserRoles(Model):
+class UserRole(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
@@ -48,7 +48,7 @@ class UserRoles(Model):
         return self.user.email + "::" + self.role.name
 
 
-class StudentDetails(Model):
+class Student(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     university = models.ForeignKey(University, on_delete=models.SET_NULL, null=True)
@@ -68,7 +68,7 @@ class StudentDetails(Model):
 
 class StudentCategory(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):

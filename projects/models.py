@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Model
 
 from resources.models import University, Category, Type
-from user.models import User, StudentDetails
+from user.models import User
 
 
 class Project(Model):
@@ -37,7 +37,7 @@ class ProjectCategory(Model):
 class ProjectParticipant(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
     isLeader = models.BooleanField(default=False)
     createdAt = models.DateTimeField(auto_now_add=True)
 

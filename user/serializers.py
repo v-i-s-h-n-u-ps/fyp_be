@@ -22,10 +22,14 @@ class RevokeTokenSerializer(serializers.Serializer):
     token = serializers.CharField()
 
 
-class SignUpSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    email = serializers.EmailField()
+class SignUpSerializer(serializers.ModelSerializer):
+    role = serializers.CharField()
     password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['name', 'password', 'email', 'role']
+        extra_kwargs = {'password': {'write_only': True}}
 
 
 class ActivateSerializer(serializers.Serializer):
