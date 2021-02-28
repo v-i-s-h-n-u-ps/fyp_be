@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'corsheaders',
     'rest_framework',
+    'channels',
+    'others',
+    'projects',
     'user',
     'resources',
 ]
@@ -74,7 +77,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'fyp_be.wsgi.application'
+ASGI_APPLICATION = "fyp_be.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        "hosts": [("127.0.0.1", 6379), ("localhost", 6379)],
+    },
+}
 
 
 # Database

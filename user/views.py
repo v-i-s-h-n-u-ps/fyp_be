@@ -1,14 +1,22 @@
+import random
+
 import requests
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fyp_be import settings
 from user.serializers import *
+
+
+def generateOTP(digits):
+    lower = 10 ** (digits - 1)
+    upper = 10 ** digits - 1
+    return random.randint(lower, upper)
 
 
 class Login(APIView):
@@ -41,6 +49,8 @@ class Login(APIView):
                     return_data = res.json()
                     return_data['user_info'] = user_data
                     return Response(return_data, status=res.status_code)
+                else:
+                    return Response(res.json(), status=res.status_code)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -112,3 +122,98 @@ class SignUp(APIView):
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Activate(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = ActivateSerializer
+
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.query_params)
+            if serializer.is_valid():
+                data = serializer.data
+                user = User.objects.filter(email=data['email'])
+                if not user.exists():
+                    return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    otp_obj = OTP.objects.filter(user=user[0], otp=data['otp'])
+                    if not otp_obj.exists():
+                        return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
+                    otp_obj.delete()
+                    user.update(is_active=1)
+                    return Response({'message': otp_obj[0].type}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetToken(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetTokenSerializer
+
+    def get(self, request):
+        try:
+            serializer = self.serializer_class(data=request.query_params)
+            if serializer.is_valid():
+                data = serializer.data
+                user = User.objects.filter(email=data['email'])
+                if not user.exists():
+                    return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
+                otp = generateOTP(6)
+                OTP.objects.create(user=user[0], otp=otp, type="reset password")
+
+                return JsonResponse({"message": "Reset your password"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordReset(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetSerializer
+
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                users = User.objects.filter(email=data['email'], is_active=1)
+                if not users.exists():
+                    return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
+                user = users[0]
+                otp_obj = OTP.objects.filter(user=user, otp=data['otp'])
+                if not otp_obj.exists():
+                    return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
+                otp_obj.delete()
+                user.set_password(data['password'])
+                user.save()
+                return JsonResponse({"message": 'Password reset successfully'}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordChange(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
+
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                user = request.user
+                if not user.check_password(data['old']):
+                    return Response({"message": "Wrong password."}, status=status.HTTP_400_BAD_REQUEST)
+                user.set_password(data['new'])
+                user.save()
+                return JsonResponse({"message": 'Password changed successfully'}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+

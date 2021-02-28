@@ -26,3 +26,23 @@ class SignUpSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
     password = serializers.CharField()
+
+
+class ActivateSerializer(serializers.Serializer):
+    name = serializers.EmailField()
+    otp = serializers.IntegerField()
+
+
+class PasswordResetTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    otp = serializers.IntegerField()
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old = serializers.CharField()
+    new = serializers.CharField()

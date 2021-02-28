@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from resources.models import Role
+from resources.models import Role, University, Category
 from user.managers import CustomUserManager
 
 
@@ -32,12 +32,44 @@ class User(AbstractUser):
 class OTP(Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.IntegerField()
+    type = models.CharField(default="activate user", help_text="activate user, reset password", max_length=20)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.id
+        return str(self.user.id)
 
 
 class UserRoles(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.email + "::" + self.role.name
+
+
+class StudentDetails(Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    university = models.ForeignKey(University, on_delete=models.SET_NULL, null=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    dateOfBirth = models.DateTimeField()
+    gender = models.CharField(max_length=10)
+    activeProjects = models.PositiveIntegerField(default=0)
+    about = models.TextField()
+    facebook = models.TextField()
+    resumeUrl = models.TextField()
+    linkedIn = models.TextField()
+    gmail = models.TextField()
+
+    def __str__(self):
+        return self.user.name + "" + self.university.name
+
+
+class StudentCategory(Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return self.student.user.name + "::" + self.category.name
