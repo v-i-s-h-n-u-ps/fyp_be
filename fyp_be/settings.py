@@ -59,6 +59,8 @@ MIDDLEWARE = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
 ]
 
+DEFAULT_FILTER_BACKENDS: ['django_filters.rest_framework.DjangoFilterBackend']
+
 ROOT_URLCONF = 'fyp_be.urls'
 
 TEMPLATES = [
