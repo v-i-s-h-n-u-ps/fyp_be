@@ -15,8 +15,7 @@ class GetUniversity(APIView):
     def get(self, request):
         try:
             universities = University.objects.all()
-            print(universities)
             data = self.serializer_class(universities, many=True)
-            return JsonResponse({"data": data} , status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"data": data.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
