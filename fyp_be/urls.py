@@ -23,3 +23,4 @@ urlpatterns = [
     path('resources/', include('resources.urls')),
     path('others/', include('others.urls')),
 ]
+

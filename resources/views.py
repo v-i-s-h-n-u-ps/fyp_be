@@ -16,6 +16,7 @@ class GetUniversity(APIView):
         try:
             universities = University.objects.all()
             data = self.serializer_class(universities, many=True)
+<<<<<<< HEAD
             return JsonResponse({"data": data.data} , status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -55,6 +56,8 @@ class GetCategory(APIView):
         try:
             category = Category.objects.all()
             data = self.serializer_class(category, many=True)
+=======
+>>>>>>> 2e6d9df4953781042726c228ed3fa5de846d3db7
             return JsonResponse({"data": data.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
