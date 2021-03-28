@@ -33,6 +33,10 @@ class ProjectCategory(Model):
     def __str__(self):
         return self.project.name + " :: " + self.category.name
 
+    @property
+    def category_name(self):
+        return self.category.name
+
 
 class ProjectParticipant(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -43,6 +47,14 @@ class ProjectParticipant(Model):
 
     def __str__(self):
         return self.project.name + " :: " + self.student.user.name
+
+    @property
+    def name(self):
+        return self.student.name
+
+    @property
+    def avatar(self):
+        return self.student.avatar
 
 
 class ProjectTask(Model):
