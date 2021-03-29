@@ -46,6 +46,16 @@ class GetProjectDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = 'all'
+        ordering = ['startDate']
+
+
+class GetProjectSummarySerializer(serializers.ModelSerializer):
+    createdBy = serializers.ReadOnlyField()
+    avatar = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'createdBy', 'avatar', 'startDate', 'endDate', 'description']
 
 
 class ManageProjectParticipantSerializer(serializers.Serializer):
@@ -70,3 +80,9 @@ class UpdateProjectTaskSerializer(serializers.ModelSerializer):
         exclude = ['project', 'user', 'createdAt']
 
 
+class GetProjectTaskSerializer(serializers.ModelSerializer):
+    type_name = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ProjectTask
+        fields = ['all', 'type_name']

@@ -81,7 +81,7 @@ class GetForum(APIView):
             forum = Forum.objects.get(id=id)
             if not forum:
                 return JsonResponse({'error': 'Forum Not Found'}, status=status.HTTP_400_BAD_REQUEST)
-            data = self.get_serializer_class(forum)
+            data = self.serializer_class(forum)
             forum_users = ForumUser.objects.filter(forum=forum, active=True)
             members = []
             for user in forum_users:
@@ -156,7 +156,7 @@ class UpdateForum(APIView):
                 data = serializer.data
                 user = request.user
                 forum = Forum.objects.get(id=data['id'])
-                admin_status = Forum.objects.filter(forum=forum, user=user)[0].isAdmin
+                admin_status = ForumUser.objects.filter(forum=forum, user=user)[0].isAdmin
                 if not admin_status:
                     return JsonResponse({'data': 'User is not an admin'}, status=status.HTTP_200_OK)
                 Forum.objects.filter(id=data['id']).update(name=data['name'], description=data['description'], type=data['type'])
