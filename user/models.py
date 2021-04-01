@@ -14,6 +14,7 @@ class User(AbstractUser):
     first_name = None
     last_name = None
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    avatar = models.TextField(default="")
     name = models.CharField(max_length=100)
     email = models.EmailField(_('email address'), unique=True)
     is_active = models.IntegerField(default=0, help_text="0: inactive, 1: active, 2: disabled")

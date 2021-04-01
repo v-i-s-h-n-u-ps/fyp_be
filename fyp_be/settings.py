@@ -59,6 +59,8 @@ MIDDLEWARE = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
 ]
 
+DEFAULT_FILTER_BACKENDS: ['django_filters.rest_framework.DjangoFilterBackend']
+
 ROOT_URLCONF = 'fyp_be.urls'
 
 TEMPLATES = [
@@ -106,6 +108,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
 }
 
 OAUTH2_PROVIDER = {

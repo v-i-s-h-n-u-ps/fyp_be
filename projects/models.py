@@ -23,6 +23,14 @@ class Project(Model):
     def __str__(self):
         return self.name
 
+    @property
+    def createdBy(self):
+        return self.user.name
+
+    @property
+    def avatar(self):
+        return self.user.avatar
+
 
 class ProjectCategory(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -32,6 +40,10 @@ class ProjectCategory(Model):
 
     def __str__(self):
         return self.project.name + " :: " + self.category.name
+
+    @property
+    def category_name(self):
+        return self.category.name
 
 
 class ProjectParticipant(Model):
@@ -43,6 +55,24 @@ class ProjectParticipant(Model):
 
     def __str__(self):
         return self.project.name + " :: " + self.student.user.name
+
+    @property
+    def name(self):
+        return self.student.name
+
+    @property
+    def avatar(self):
+        return self.student.avatar
+
+
+class ProjectCount(Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    views = models.PositiveIntegerField(default=0)
+    trending_score = models.DecimalField(default=0.00, max_digits=7, decimal_places=2)
+
+    def __str__(self):
+        return self.project.name
 
 
 class ProjectTask(Model):
@@ -58,13 +88,6 @@ class ProjectTask(Model):
     def __str__(self):
         return self.task
 
-
-class ProjectCount(Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    views = models.PositiveIntegerField(default=0)
-    trending_score = models.DecimalField(default=0.00, max_digits=7, decimal_places=2)
-
-    def __str__(self):
-        return self.project.name
-
+    @property
+    def type_name(self):
+        return self.type.name
