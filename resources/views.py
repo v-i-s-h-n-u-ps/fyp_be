@@ -13,7 +13,7 @@ class GetUniversity(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UniversitySerializer
 
-    @swagger_auto_schema(responses={200: UniversitySerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: UniversitySerializer(many=True)})
     def get(self, request):
         try:
             universities = University.objects.all()
@@ -27,7 +27,7 @@ class GetRole(APIView):
     permission_classes = [AllowAny]
     serializer_class = RoleSerializer
 
-    @swagger_auto_schema(responses={200: RoleSerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: RoleSerializer(many=True)})
     def get(self, request):
         try:
             role = Role.objects.all()
@@ -41,7 +41,7 @@ class GetType(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TypeSerializer
 
-    @swagger_auto_schema(responses={200: TypeSerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: TypeSerializer(many=True)})
     def get(self, request):
         try:
             types = Type.objects.all()
@@ -55,7 +55,7 @@ class GetCategory(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
 
-    @swagger_auto_schema(responses={200: CategorySerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: CategorySerializer(many=True)})
     def get(self, request):
         try:
             category = Category.objects.all()

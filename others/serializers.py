@@ -12,7 +12,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 class TaskGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = 'all'
+        fields = '__all__'
 
 
 class CreateForumSerializer(serializers.ModelSerializer):
@@ -28,7 +28,8 @@ class GetForumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Forum
-        fields = ['all', 'user_name']
+        fields = '__all__'
+        extra_fields = ['user_name']
 
 
 class UpdateForumSerializer(serializers.ModelSerializer):

@@ -17,6 +17,7 @@ class CreateTask(APIView):
     serializer_class = TaskCreateSerializer
     get_serializer_class = TaskGetSerializer
 
+    @swagger_auto_schema(responses={status.HTTP_200_OK: TaskGetSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user
@@ -80,11 +81,11 @@ class GetForum(APIView):
     serializer_class = GetForumSerializer
     filterset_fields = ['id']
 
-    # @swagger_auto_schema(manual_parameters=openapi.Parameter(
-    #     'id', openapi.IN_QUERY,
-    #     description="test manual param",
-    #     type=openapi.TYPE_STRING)
-    # )
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          'Forum id',
+                          type='uuid'),
+    ], responses={status.HTTP_200_OK: GetForumSerializer(many=True)})
     def get(self, request):
         try:
             id = request.GET.get('id')
@@ -107,6 +108,7 @@ class GetForumsUserIsPartOf(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GetForumSerializer
 
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetForumSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user

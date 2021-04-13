@@ -87,6 +87,21 @@ CHANNEL_LAYERS = {
     },
 }
 
+SWAGGER_SETTINGS = {
+    'SUPPORTED_SUBMIT_METHODS': ['post', 'get'],  # Due to bug described above
+    'SECURITY_DEFINITIONS': {
+        "customers_auth": {
+            "type": "oauth2",
+            "tokenUrl": "/o/token/",
+            "flow": "password",
+            "scopes": {
+                "read": "Read scope",
+                "write": "Write scope"
+            }
+        }
+    },
+}
+
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 

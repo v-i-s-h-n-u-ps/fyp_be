@@ -82,7 +82,7 @@ class GetProjectParticipants(APIView):
     serializer_class = ProjectParticipantSerializer
     filterset_fields = ['id']
 
-    @swagger_auto_schema(responses={200: ProjectParticipantSerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: ProjectParticipantSerializer(many=True)})
     def get(self, request):
         try:
             id = request.GET.get('id')
@@ -131,7 +131,7 @@ class GetMyProjects(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = GetProjectSummarySerializer
 
-    @swagger_auto_schema(responses={200: GetProjectSummarySerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetProjectSummarySerializer(many=True)})
     def get(self, request):
         try:
             user = request.user
@@ -154,7 +154,7 @@ class ListProjects(APIView):
     pagination_class = ResultsSetPagination
     filterset_fields = ['page']
 
-    @swagger_auto_schema(responses={200: GetProjectSummarySerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetProjectSummarySerializer(many=True)})
     def get(self, request):
         try:
             page = request.GET.get('page')
@@ -258,7 +258,7 @@ class GetProjectTask(APIView):
     pagination_class = ResultsSetPagination
     filterset_fields = ['page', 'project']
 
-    @swagger_auto_schema(responses={200: GetProjectTaskSerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetProjectTaskSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user

@@ -169,6 +169,7 @@ class PasswordResetToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetTokenSerializer
 
+    @swagger_auto_schema(query_serializer=PasswordResetTokenSerializer)
     def get(self, request):
         try:
             serializer = self.serializer_class(data=request.query_params)
@@ -179,8 +180,7 @@ class PasswordResetToken(APIView):
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 otp = generateOTP(6)
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
-
-                return JsonResponse({"message": "Reset your password"}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
