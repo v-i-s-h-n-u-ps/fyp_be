@@ -1,9 +1,11 @@
 import random
+from collections import OrderedDict
 
 import requests
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -55,7 +57,7 @@ class Login(APIView):
                     user_data = self.user_serializer(user[0]).data
                     return_data = res.json()
                     return_data['user_info'] = user_data
-                    return Response(return_data, status=res.status_code)
+                    return Response({"data": return_data}, status=res.status_code)
                 else:
                     return Response(res.json(), status=res.status_code)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -82,7 +84,7 @@ class RefreshToken(APIView):
                         'client_secret': settings.CLIENT_SECRET,
                     }
                 )
-                return Response(res.json(), status=res.status_code)
+                return Response({"data": res.json()}, status=res.status_code)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:

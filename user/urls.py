@@ -1,7 +1,8 @@
 
 from django.urls import path
 
-from user.views import *
+from user.views import Login, RevokeToken, RefreshToken, SignUp, Activate, PasswordResetToken, PasswordReset, \
+    PasswordChange
 
 urlpatterns = [
     path('login/', Login.as_view(), name='login'),
