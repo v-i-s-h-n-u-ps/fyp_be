@@ -31,7 +31,7 @@ from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerial
 def send_confirmation_email(subject, content, file):
     try:
         body = render_to_string(BASE_DIR + '/templates/'+file+'.html', content)
-        send_mail(subject, content, EMAIL_HOST_USER, content['email'], html_message=body, fail_silently=False)
+        send_mail(subject, '', EMAIL_HOST_USER, content['email'], html_message=body, fail_silently=False)
     except Exception as e:
         print(repr(e))
 
@@ -151,7 +151,7 @@ class SignUp(APIView):
                 OTP.objects.create(user=custom_user, otp=otp, type="signup")
                 subject = "Welcome to Application"
                 content = {
-                    'email': custom_user.email,
+                    'email': [custom_user.email],
                     'otp': otp,
                     'name': custom_user.name
                 }
@@ -206,7 +206,7 @@ class PasswordResetToken(APIView):
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
                 subject = "Reset your password"
                 content = {
-                    'email': user[0].email,
+                    'email': [user[0].email],
                     'name': user[0].name,
                     'otp': otp
                 }

@@ -1,17 +1,15 @@
-# Wiztute Project
-Wiztute backend server
-
-## Wiztute Backend Server
+# Project Backend
+Backend server
 
 ## Contributors
-* Vishnu P S
+* Narvitaa Surendran
 
 ## Django-admin superuser
 
 | Key | Value |
 |----------|------------|
-| Email | vishnu@gmail.com | 
-| Password| krisiz-462 |
+| Email | admin@gmail.com | 
+| Password| admin |
 
 ## Setup
 * virtualenv venv -p python3
