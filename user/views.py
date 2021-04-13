@@ -29,7 +29,7 @@ from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerial
     PasswordChangeSerializer
 
 
-def send_confirmation_email(user):  # does not work now
+def send_confirmation_email(user, subject, content):  # does not work now
     print("something")
     c = Context({
         'email': user.email,
@@ -41,10 +41,7 @@ def send_confirmation_email(user):  # does not work now
         'protocol': 'http',
     })
     print("something again")
-    #msg_plain = render_to_string(BASE_URL + '/templates/account_confirm.txt', c)
-    print("something last one")
-    #msg_html = render_to_string(BASE_URL + '/templates/confirm_registration_email.html', c)
-    send_mail('hey', 'hello, how are you', EMAIL_HOST_USER, [user.email], fail_silently=False)
+    send_mail(subject, content, EMAIL_HOST_USER, [user.email], html_message= content, fail_silently=False)
 
 
 def generateOTP(digits):
@@ -150,7 +147,6 @@ class SignUp(APIView):
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
-            print(serializer)
             if serializer.is_valid():
                 data = serializer.data
                 custom_user = User(email=data['email'], password=make_password(data['password']),
@@ -158,8 +154,13 @@ class SignUp(APIView):
                 role = Role.objects.get(name=data['role'])
                 custom_user.save()
                 user_role = UserRole(user=custom_user, role=role)
-                print(custom_user, role)
                 user_role.save()
+                otp = generateOTP(6)
+                OTP.objects.create(user=custom_user, otp=otp, type="signup")
+                subject = "Welcome to Application"
+                content = "<div> Please enter the six digit OTP below to validate your account. <br/> <br/> <b>" + str(
+                    otp) + "</b> </div>"
+                send_confirmation_email(custom_user, subject, content)
                 return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -174,7 +175,7 @@ class Activate(APIView):
     @swagger_auto_schema(request_body=ActivateSerializer)
     def post(self, request):
         try:
-            serializer = self.serializer_class(data=request.query_params)
+            serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 data = serializer.data
                 user = User.objects.filter(email=data['email'])
@@ -208,7 +209,9 @@ class PasswordResetToken(APIView):
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 otp = generateOTP(6)
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
-                send_confirmation_email(user[0])
+                subject = "Reset your password"
+                content = "<div> Please enter the OTP below to reset your password. <br/> <br/> <b>" + str(otp) + "</b> </div>"
+                send_confirmation_email(user[0], subject, content)
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

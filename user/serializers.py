@@ -33,7 +33,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class ActivateSerializer(serializers.Serializer):
-    name = serializers.EmailField()
+    email = serializers.EmailField()
     otp = serializers.IntegerField()
 
 
