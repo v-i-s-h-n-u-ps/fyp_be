@@ -1,25 +1,19 @@
 import random
-from collections import OrderedDict
 
 import requests
 from django.conf.global_settings import EMAIL_HOST_USER
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.template import Context
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from fyp_be import settings
-from fyp_be.settings import EMAIL_HOST_USER, BASE_DIR
+from fyp_be.settings import EMAIL_HOST_USER, BASE_DIR, CLIENT_ID, CLIENT_SECRET, BASE_URL
 from resources.models import Role
 from user.models import User, OTP, UserRole
 from user.permissions import IsStudent
@@ -58,13 +52,13 @@ class Login(APIView):
                 if not user.exists():
                     return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
-                    settings.BASE_URL + 'o/token/',
+                    BASE_URL + 'o/token/',
                     data={
                         'grant_type': 'password',
                         'username': data['email'],  # username for oauth is the login we have.
                         'password': data['password'],
-                        'client_id': settings.CLIENT_ID,
-                        'client_secret': settings.CLIENT_SECRET,
+                        'client_id': CLIENT_ID,
+                        'client_secret': CLIENT_SECRET,
                     }
                 )
                 if res.status_code == status.HTTP_200_OK:
@@ -91,12 +85,12 @@ class RefreshToken(APIView):
             if serializer.is_valid():
                 data = serializer.data
                 res = requests.post(
-                    settings.BASE_URL + 'o/token/',
+                    BASE_URL + 'o/token/',
                     data={
                         'grant_type': 'refresh_token',
                         'refresh_token': data['refresh_token'],
-                        'client_id': settings.CLIENT_ID,
-                        'client_secret': settings.CLIENT_SECRET,
+                        'client_id': CLIENT_ID,
+                        'client_secret': CLIENT_SECRET,
                     }
                 )
                 return Response({"data": res.json()}, status=res.status_code)
@@ -117,11 +111,11 @@ class RevokeToken(APIView):
             if serializer.is_valid():
                 data = serializer.data
                 res = requests.post(
-                    settings.BASE_URL + 'o/revoke_token/',
+                    BASE_URL + 'o/revoke_token/',
                     data={
                         'token': data['token'],
-                        'client_id': settings.CLIENT_ID,
-                        'client_secret': settings.CLIENT_SECRET,
+                        'client_id': CLIENT_ID,
+                        'client_secret': CLIENT_SECRET,
                     }
                 )
                 return Response({"message": "Token Revoked"}, status=res.status_code)
