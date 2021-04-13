@@ -16,7 +16,7 @@ class UpdateProjectDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'location', 'startDate', 'endDate', 'description']
+        fields = ['id', 'name', 'location', 'startDate', 'endDate', 'description', 'categories']
 
 
 class ProjectParticipantSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectParticipant
-        fields = ['all', 'name', 'avatar']
+        fields = ['id', 'name', 'avatar', 'isLeader', 'createdAt']
 
 
 class ProjectCategorySerializer(serializers.ModelSerializer):
@@ -39,13 +39,13 @@ class ProjectCategorySerializer(serializers.ModelSerializer):
 class ProjectCountSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectCount
-        fields = ['all']
+        fields = '__all__'
 
 
 class GetProjectDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = 'all'
+        fields = '__all__'
         ordering = ['startDate']
 
 
@@ -85,4 +85,5 @@ class GetProjectTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectTask
-        fields = ['all', 'type_name']
+        fields = '__all__'
+        extra_fields = ['type_name']

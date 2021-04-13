@@ -1,4 +1,6 @@
 from django.http import JsonResponse
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -15,6 +17,7 @@ class CreateTask(APIView):
     serializer_class = TaskCreateSerializer
     get_serializer_class = TaskGetSerializer
 
+    @swagger_auto_schema(responses={status.HTTP_200_OK: TaskGetSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user
@@ -26,6 +29,7 @@ class CreateTask(APIView):
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(request_body=TaskCreateSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -34,7 +38,8 @@ class CreateTask(APIView):
                 user = request.user
                 if not user:
                     return JsonResponse({'error': 'User Not Found'}, status=status.HTTP_400_BAD_REQUEST)
-                task = Task(user=user, task=data['task'], startDate=data['startDate'], endDate=data['endDate'], type=data['type'])
+                task = Task(user=user, task=data['task'], startDate=data['startDate'], endDate=data['endDate'],
+                            type=data['type'])
                 task.save()
                 return JsonResponse({'data': task.id}, status=status.HTTP_201_CREATED)
             else:
@@ -47,6 +52,7 @@ class CreateForum(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CreateForumSerializer
 
+    @swagger_auto_schema(request_body=CreateForumSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -75,6 +81,11 @@ class GetForum(APIView):
     serializer_class = GetForumSerializer
     filterset_fields = ['id']
 
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('id', openapi.IN_QUERY,
+                          'Forum id',
+                          type='uuid'),
+    ], responses={status.HTTP_200_OK: GetForumSerializer(many=True)})
     def get(self, request):
         try:
             id = request.GET.get('id')
@@ -97,6 +108,7 @@ class GetForumsUserIsPartOf(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GetForumSerializer
 
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetForumSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user
@@ -115,6 +127,7 @@ class UpdateUsersOfForum(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UpdateUserOfForumSerializer
 
+    @swagger_auto_schema(request_body=UpdateUserOfForumSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -129,7 +142,8 @@ class UpdateUsersOfForum(APIView):
                     return JsonResponse({'error': 'User Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 request_user_role = ForumUser.objects.filter(user=user, forum=forum)[0].isAdmin
                 if not request_user_role:
-                    return JsonResponse({'error': 'Cannot save action. User is not an admin.'}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({'error': 'Cannot save action. User is not an admin.'},
+                                        status=status.HTTP_400_BAD_REQUEST)
                 if data['type'] == 1:
                     forum.members += 1
                     forum.save()
@@ -147,8 +161,9 @@ class UpdateUsersOfForum(APIView):
 
 class UpdateForum(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class= UpdateForumSerializer
+    serializer_class = UpdateForumSerializer
 
+    @swagger_auto_schema(request_body=UpdateForumSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -159,7 +174,8 @@ class UpdateForum(APIView):
                 admin_status = ForumUser.objects.filter(forum=forum, user=user)[0].isAdmin
                 if not admin_status:
                     return JsonResponse({'data': 'User is not an admin'}, status=status.HTTP_200_OK)
-                Forum.objects.filter(id=data['id']).update(name=data['name'], description=data['description'], type=data['type'])
+                Forum.objects.filter(id=data['id']).update(name=data['name'], description=data['description'],
+                                                           type=data['type'])
                 ForumCategory.objects.filter(forum=forum).delete()
                 for cat in data['categories']:
                     category = Category.objects.get(id=cat)

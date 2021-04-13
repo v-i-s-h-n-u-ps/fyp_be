@@ -15,12 +15,29 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework.permissions import AllowAny
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="FYP APIs",
+      default_version='v1',
+      description="Documentation of backend apis",
+      contact=openapi.Contact(email="narvitaasurendran99@gmail.com"),
+   ),
+   public=True,
+   permission_classes=[AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('user/', include('user.urls')),
     path('resources/', include('resources.urls')),
     path('others/', include('others.urls')),
+    path('projects/', include('projects.urls')),
 ]
 

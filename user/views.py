@@ -1,9 +1,12 @@
 import random
+from collections import OrderedDict
 
 import requests
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -29,6 +32,7 @@ class Login(APIView):
     serializer_class = LoginSerializer
     user_serializer = UserSerializer
 
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -53,7 +57,7 @@ class Login(APIView):
                     user_data = self.user_serializer(user[0]).data
                     return_data = res.json()
                     return_data['user_info'] = user_data
-                    return Response(return_data, status=res.status_code)
+                    return Response({"data": return_data}, status=res.status_code)
                 else:
                     return Response(res.json(), status=res.status_code)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -65,6 +69,7 @@ class RefreshToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = RefreshTokenSerializer
 
+    @swagger_auto_schema(request_body=RefreshTokenSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -79,7 +84,7 @@ class RefreshToken(APIView):
                         'client_secret': settings.CLIENT_SECRET,
                     }
                 )
-                return Response(res.json(), status=res.status_code)
+                return Response({"data": res.json()}, status=res.status_code)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -90,6 +95,7 @@ class RevokeToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = RevokeTokenSerializer
 
+    @swagger_auto_schema(request_body=RevokeTokenSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -114,6 +120,7 @@ class SignUp(APIView):
     permission_classes = [AllowAny]
     serializer_class = SignUpSerializer
 
+    @swagger_auto_schema(request_body=SignUpSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -138,6 +145,7 @@ class Activate(APIView):
     permission_classes = [AllowAny]
     serializer_class = ActivateSerializer
 
+    @swagger_auto_schema(request_body=ActivateSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.query_params)
@@ -163,6 +171,7 @@ class PasswordResetToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetTokenSerializer
 
+    @swagger_auto_schema(query_serializer=PasswordResetTokenSerializer)
     def get(self, request):
         try:
             serializer = self.serializer_class(data=request.query_params)
@@ -173,8 +182,7 @@ class PasswordResetToken(APIView):
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 otp = generateOTP(6)
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
-
-                return JsonResponse({"message": "Reset your password"}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -185,6 +193,7 @@ class PasswordReset(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetSerializer
 
+    @swagger_auto_schema(request_body=PasswordResetSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -211,6 +220,7 @@ class PasswordChange(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = PasswordChangeSerializer
 
+    @swagger_auto_schema(request_body=PasswordChangeSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
