@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
@@ -12,6 +13,7 @@ class GetUniversity(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UniversitySerializer
 
+    @swagger_auto_schema(responses={200: UniversitySerializer(many=True)})
     def get(self, request):
         try:
             universities = University.objects.all()
@@ -25,6 +27,7 @@ class GetRole(APIView):
     permission_classes = [AllowAny]
     serializer_class = RoleSerializer
 
+    @swagger_auto_schema(responses={200: RoleSerializer(many=True)})
     def get(self, request):
         try:
             role = Role.objects.all()
@@ -38,6 +41,7 @@ class GetType(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TypeSerializer
 
+    @swagger_auto_schema(responses={200: TypeSerializer(many=True)})
     def get(self, request):
         try:
             types = Type.objects.all()
@@ -51,6 +55,7 @@ class GetCategory(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
 
+    @swagger_auto_schema(responses={200: CategorySerializer(many=True)})
     def get(self, request):
         try:
             category = Category.objects.all()

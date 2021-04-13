@@ -1,5 +1,6 @@
 from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -25,6 +26,7 @@ class CreateProject(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly, IsStudent]
     serializer_class = CreateProjectSerializer
 
+    @swagger_auto_schema(request_body=CreateProjectSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -80,6 +82,7 @@ class GetProjectParticipants(APIView):
     serializer_class = ProjectParticipantSerializer
     filterset_fields = ['id']
 
+    @swagger_auto_schema(responses={200: ProjectParticipantSerializer(many=True)})
     def get(self, request):
         try:
             id = request.GET.get('id')
@@ -97,6 +100,7 @@ class UpdateProject(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = UpdateProjectDetailsSerializer
 
+    @swagger_auto_schema(request_body=UpdateProjectDetailsSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -127,6 +131,7 @@ class GetMyProjects(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = GetProjectSummarySerializer
 
+    @swagger_auto_schema(responses={200: GetProjectSummarySerializer(many=True)})
     def get(self, request):
         try:
             user = request.user
@@ -149,6 +154,7 @@ class ListProjects(APIView):
     pagination_class = ResultsSetPagination
     filterset_fields = ['page']
 
+    @swagger_auto_schema(responses={200: GetProjectSummarySerializer(many=True)})
     def get(self, request):
         try:
             page = request.GET.get('page')
@@ -171,6 +177,7 @@ class ManageProjectParticipant(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = ManageProjectParticipantSerializer
 
+    @swagger_auto_schema(request_body=ManageProjectParticipantSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -199,6 +206,7 @@ class AddProjectTask(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = AddProjectTaskSerializer
 
+    @swagger_auto_schema(request_body=AddProjectTaskSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -225,6 +233,7 @@ class UpdateProjectTask(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = UpdateProjectTaskSerializer
 
+    @swagger_auto_schema(request_body=UpdateProjectTaskSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -249,6 +258,7 @@ class GetProjectTask(APIView):
     pagination_class = ResultsSetPagination
     filterset_fields = ['page', 'project']
 
+    @swagger_auto_schema(responses={200: GetProjectTaskSerializer(many=True)})
     def get(self, request):
         try:
             user = request.user

@@ -4,6 +4,7 @@ import requests
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -29,6 +30,7 @@ class Login(APIView):
     serializer_class = LoginSerializer
     user_serializer = UserSerializer
 
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -65,6 +67,7 @@ class RefreshToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = RefreshTokenSerializer
 
+    @swagger_auto_schema(request_body=RefreshTokenSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -90,6 +93,7 @@ class RevokeToken(APIView):
     permission_classes = [AllowAny]
     serializer_class = RevokeTokenSerializer
 
+    @swagger_auto_schema(request_body=RevokeTokenSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -114,6 +118,7 @@ class SignUp(APIView):
     permission_classes = [AllowAny]
     serializer_class = SignUpSerializer
 
+    @swagger_auto_schema(request_body=SignUpSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -138,6 +143,7 @@ class Activate(APIView):
     permission_classes = [AllowAny]
     serializer_class = ActivateSerializer
 
+    @swagger_auto_schema(request_body=ActivateSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.query_params)
@@ -185,6 +191,7 @@ class PasswordReset(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetSerializer
 
+    @swagger_auto_schema(request_body=PasswordResetSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -211,6 +218,7 @@ class PasswordChange(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = PasswordChangeSerializer
 
+    @swagger_auto_schema(request_body=PasswordChangeSerializer)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
