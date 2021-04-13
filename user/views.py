@@ -2,9 +2,16 @@ import random
 from collections import OrderedDict
 
 import requests
+from django.conf.global_settings import EMAIL_HOST_USER
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.template import Context
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -13,12 +20,31 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fyp_be import settings
+from fyp_be.settings import BASE_URL, EMAIL_HOST_USER
 from resources.models import Role
 from user.models import User, OTP, UserRole
 from user.permissions import IsStudent
 from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerializer, RevokeTokenSerializer, \
     SignUpSerializer, ActivateSerializer, PasswordResetTokenSerializer, PasswordResetSerializer, \
     PasswordChangeSerializer
+
+
+def send_confirmation_email(user):  # does not work now
+    print("something")
+    c = Context({
+        'email': user.email,
+        'domain': 'wiztute',
+        'site_name': 'Wiztute',
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        # 'user': user,
+        'token': default_token_generator.make_token(user),
+        'protocol': 'http',
+    })
+    print("something again")
+    #msg_plain = render_to_string(BASE_URL + '/templates/account_confirm.txt', c)
+    print("something last one")
+    #msg_html = render_to_string(BASE_URL + '/templates/confirm_registration_email.html', c)
+    send_mail('hey', 'hello, how are you', EMAIL_HOST_USER, [user.email], fail_silently=False)
 
 
 def generateOTP(digits):
@@ -182,6 +208,7 @@ class PasswordResetToken(APIView):
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 otp = generateOTP(6)
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
+                send_confirmation_email(user[0])
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
