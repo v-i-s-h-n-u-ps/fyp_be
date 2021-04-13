@@ -12,7 +12,6 @@ from django.utils import timezone
 from django.template import Context
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -20,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fyp_be import settings
-from fyp_be.settings import BASE_URL, EMAIL_HOST_USER
+from fyp_be.settings import EMAIL_HOST_USER, BASE_DIR
 from resources.models import Role
 from user.models import User, OTP, UserRole
 from user.permissions import IsStudent
@@ -29,19 +28,12 @@ from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerial
     PasswordChangeSerializer
 
 
-def send_confirmation_email(user, subject, content):  # does not work now
-    print("something")
-    c = Context({
-        'email': user.email,
-        'domain': 'wiztute',
-        'site_name': 'Wiztute',
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        # 'user': user,
-        'token': default_token_generator.make_token(user),
-        'protocol': 'http',
-    })
-    print("something again")
-    send_mail(subject, content, EMAIL_HOST_USER, [user.email], html_message= content, fail_silently=False)
+def send_confirmation_email(subject, content, file):
+    try:
+        body = render_to_string(BASE_DIR + '/templates/'+file+'.html', content)
+        send_mail(subject, content, EMAIL_HOST_USER, content['email'], html_message=body, fail_silently=False)
+    except Exception as e:
+        print(repr(e))
 
 
 def generateOTP(digits):
@@ -158,9 +150,12 @@ class SignUp(APIView):
                 otp = generateOTP(6)
                 OTP.objects.create(user=custom_user, otp=otp, type="signup")
                 subject = "Welcome to Application"
-                content = "<div> Please enter the six digit OTP below to validate your account. <br/> <br/> <b>" + str(
-                    otp) + "</b> </div>"
-                send_confirmation_email(custom_user, subject, content)
+                content = {
+                    'email': custom_user.email,
+                    'otp': otp,
+                    'name': custom_user.name
+                }
+                send_confirmation_email(subject, content, 'confirm_registration_email')
                 return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -210,8 +205,12 @@ class PasswordResetToken(APIView):
                 otp = generateOTP(6)
                 OTP.objects.create(user=user[0], otp=otp, type="reset password")
                 subject = "Reset your password"
-                content = "<div> Please enter the OTP below to reset your password. <br/> <br/> <b>" + str(otp) + "</b> </div>"
-                send_confirmation_email(user[0], subject, content)
+                content = {
+                    'email': user[0].email,
+                    'name': user[0].name,
+                    'otp': otp
+                }
+                send_confirmation_email(subject, content, 'reset_password_email')
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
