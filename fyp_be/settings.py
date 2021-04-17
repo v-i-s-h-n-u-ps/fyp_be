@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sslserver',
     'drf_yasg',
     'oauth2_provider',
     'corsheaders',
@@ -161,8 +162,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-CLIENT_ID = 'smJLvtdyMaqumAo4uv9Xly3ozpiaYNayjVNW4uF2'
-CLIENT_SECRET = 'lQzhxMPsXyDRsbmVNejldiLPV3SEYNOkxmWWnAJDSN007Hr5yCmipgMdr7RW57V4hfRnG9LtReZnWO2kxM4fEPk9lUI0BZhIk9msWF1jn1Fx9DhOXxtHtUKfa7LTWFma'
+CLIENT_ID = 'iqJsT5yUktY5PchS0DGEJUikwyDoxF9RINZlAjWD'
+CLIENT_SECRET = 'ynxhIsG2vPYMr2iix98VOKVf7sYPOhiqswkIeIR8nUcaK86p6TJa7JwymVURsj0N7GEUHUALgtVXZ2NYgm6xZqDQne4fOS1htYR2Hyj4qwfGvhdyUc6mjCvnKOa6qmdU'
 
 LANGUAGE_CODE = 'en-us'
 
@@ -187,5 +188,5 @@ EMAIL_HOST_PASSWORD = 'fyp@1234'
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-BASE_URL = 'http://127.0.0.1:8000/'
+BASE_URL = 'https://www.domained.co.in:8000/'
 AUTH_USER_MODEL = 'user.User'

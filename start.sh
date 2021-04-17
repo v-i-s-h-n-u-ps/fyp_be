@@ -1,0 +1,1 @@
+gunicorn --workers=5 --worker-class=gevent --timeout=90 --certfile=/etc/letsencrypt/live/www.domained.co.in/fullchain.pem --keyfile=/etc/letsencrypt/live/www.domained.co.in/privkey.pem --bind 0.0.0.0:8000 fyp_be.wsgi

@@ -34,7 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'), 
     path('user/', include('user.urls')),
     path('resources/', include('resources.urls')),
     path('others/', include('others.urls')),

@@ -59,7 +59,7 @@ class Login(APIView):
                         'password': data['password'],
                         'client_id': CLIENT_ID,
                         'client_secret': CLIENT_SECRET,
-                    }
+                    },
                 )
                 if res.status_code == status.HTTP_200_OK:
                     user.update(last_login=timezone.now())
@@ -135,9 +135,11 @@ class SignUp(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 data = serializer.data
+                role = Role.objects.get(name=data['role'])
+                if not role:
+                    return JsonResponse({"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST)
                 custom_user = User(email=data['email'], password=make_password(data['password']),
                                    name=data['name'])
-                role = Role.objects.get(name=data['role'])
                 custom_user.save()
                 user_role = UserRole(user=custom_user, role=role)
                 user_role.save()
