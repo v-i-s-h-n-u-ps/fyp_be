@@ -69,7 +69,7 @@ class Login(APIView):
                     return Response({"data": return_data}, status=res.status_code)
                 else:
                     return Response(res.json(), status=res.status_code)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -95,7 +95,7 @@ class RefreshToken(APIView):
                 )
                 return Response({"data": res.json()}, status=res.status_code)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -120,7 +120,7 @@ class RevokeToken(APIView):
                 )
                 return Response({"message": "Token Revoked"}, status=res.status_code)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -152,7 +152,7 @@ class SignUp(APIView):
                 send_confirmation_email(subject, content, 'confirm_registration_email')
                 return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -178,7 +178,7 @@ class Activate(APIView):
                     user.update(is_active=1)
                     return Response({'message': otp_obj[0].type}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -207,7 +207,7 @@ class PasswordResetToken(APIView):
                 send_confirmation_email(subject, content, 'reset_password_email')
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -234,7 +234,7 @@ class PasswordReset(APIView):
                 user.save()
                 return JsonResponse({"message": 'Password reset successfully'}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -256,7 +256,7 @@ class PasswordChange(APIView):
                 user.save()
                 return JsonResponse({"message": 'Password changed successfully'}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '^90lsps(26w+ywz1mpmvej$30n+3j6h=rx+pl961$l@l$roa+e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
+    'sslserver',
     'oauth2_provider',
     'corsheaders',
     'rest_framework',
@@ -187,5 +188,6 @@ EMAIL_HOST_PASSWORD = 'fyp@1234'
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 BASE_URL = 'http://127.0.0.1:8000/'
 AUTH_USER_MODEL = 'user.User'
