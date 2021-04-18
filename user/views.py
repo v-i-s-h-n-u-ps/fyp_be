@@ -36,6 +36,22 @@ def generateOTP(digits):
     return random.randint(lower, upper)
 
 
+class UserDetails(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = UserSerializer
+
+    @swagger_auto_schema(response={status.HTTP_200_OK, UserSerializer})
+    def get(self, request):
+        try:
+            user = request.user
+            data = self.serializer_class(user)
+            if not user:
+                return Response({'error': "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": data.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class Login(APIView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer

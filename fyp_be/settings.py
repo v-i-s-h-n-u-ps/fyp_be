@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '^90lsps(26w+ywz1mpmvej$30n+3j6h=rx+pl961$l@l$roa+e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sslserver',
     'drf_yasg',
-    'sslserver',
     'oauth2_provider',
     'corsheaders',
     'rest_framework',
