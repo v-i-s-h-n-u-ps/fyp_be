@@ -13,5 +13,5 @@ urlpatterns = [
     path('password-reset-request/', PasswordResetToken.as_view(), name='password-reset-request'),
     path('password-reset/', PasswordReset.as_view(), name='password-reset'),
     path('password-change/', PasswordChange.as_view(), name='password-change'),
-    path('me', UserDetails.as_view(), name='me'),
+    path('me/', UserDetails.as_view(), name='me'),
 ]

@@ -64,9 +64,22 @@ class Login(APIView):
 
             if serializer.is_valid():
                 data = serializer.data
+                _user = User.objects.filter(email=data['email'])
+                if not _user.exists():
+                    return Response({"error": {"message": "User not found"}}, status=status.HTTP_404_NOT_FOUND)
+                user_not_active = User.objects.filter(email=data['email'], is_active=0)
+                if user_not_active.exists():
+                    otp = generateOTP(6)
+                    OTP.objects.create(user=user_not_active[0], otp=otp, type="signup")
+                    subject = "Verify your email"
+                    content = {
+                        'email': [user_not_active[0].email],
+                        'otp': otp,
+                        'name': user_not_active[0].name
+                    }
+                    send_confirmation_email(subject, content, 'confirm_registration_email')
+                    return Response({"data": {"message": "Otp sent"}, "code": "USER_NOT_ACTIVE"}, status=status.HTTP_206_PARTIAL_CONTENT)
                 user = User.objects.filter(email=data['email'], is_active=1)
-                if not user.exists():
-                    return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
                     BASE_URL + 'o/token/',
                     data={
@@ -134,7 +147,7 @@ class RevokeToken(APIView):
                         'client_secret': CLIENT_SECRET,
                     }
                 )
-                return Response({"message": "Token Revoked"}, status=res.status_code)
+                return Response({"data": {"message": "Token Revoked"}}, status=res.status_code)
             else:
                 return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -192,9 +205,10 @@ class Activate(APIView):
                     otp_obj = OTP.objects.filter(user=user[0], otp=data['otp'])
                     if not otp_obj.exists():
                         return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
+                    _type = otp_obj[0].type
                     otp_obj.delete()
                     user.update(is_active=1)
-                    return Response({'message': otp_obj[0].type}, status=status.HTTP_200_OK)
+                    return Response({'message': _type}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -240,7 +254,7 @@ class PasswordReset(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 data = serializer.data
-                users = User.objects.filter(email=data['email'], is_active=1)
+                users = User.objects.filter(email=data['email'])
                 if not users.exists():
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 user = users[0]
@@ -248,6 +262,8 @@ class PasswordReset(APIView):
                 if not otp_obj.exists():
                     return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
                 otp_obj.delete()
+                users.update(is_active=1)
+                OTP.objects.filter(user=user).delete()
                 user.set_password(data['password'])
                 user.save()
                 return JsonResponse({"message": 'Password reset successfully'}, status=status.HTTP_200_OK)
