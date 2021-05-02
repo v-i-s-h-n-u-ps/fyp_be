@@ -53,12 +53,12 @@ class Login(APIView):
                     return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
                     BASE_URL + 'o/token/',
-                    data={
+                    {
                         'grant_type': 'password',
                         'username': data['email'],  # username for oauth is the login we have.
                         'password': data['password'],
-                        'client_id': CLIENT_ID,
-                        'client_secret': CLIENT_SECRET,
+                        'client_id': 'ktqUnxMpuEAuh3Uo5k8o20Tt6grm7kYZ0hbOjJkC', # CLIENT_ID
+                        'client_secret': 'oXfvBtyOznEb2kLyVphAfuxNHfF4WC63NXsp4mIagnopolwZ9qMzvkW5pxFTueaMFcSeShaMfQlTfNtGUrrLrbDmMdGCRvNIon5RYirJbfYg39WesTK9CSGbLob9CXft', # CLIENT_SECRET
                     }
                 )
                 if res.status_code == status.HTTP_200_OK:
@@ -176,7 +176,7 @@ class Activate(APIView):
                         return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
                     otp_obj.delete()
                     user.update(is_active=1)
-                    return Response({'message': otp_obj[0].type}, status=status.HTTP_200_OK)
+                    return Response({'message': "Verification successful"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
