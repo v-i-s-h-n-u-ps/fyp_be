@@ -1,16 +1,15 @@
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 
-# Create your views here.
 from resources.models import University, Role, Type, Category
 from resources.serializers import UniversitySerializer, RoleSerializer, TypeSerializer, CategorySerializer
 
 
 class GetUniversity(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = UniversitySerializer
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: UniversitySerializer(many=True)})
@@ -24,7 +23,7 @@ class GetUniversity(APIView):
 
 
 class GetRole(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = RoleSerializer
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: RoleSerializer(many=True)})
@@ -38,7 +37,7 @@ class GetRole(APIView):
 
 
 class GetType(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TypeSerializer
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: TypeSerializer(many=True)})
@@ -52,7 +51,7 @@ class GetType(APIView):
 
 
 class GetCategory(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = CategorySerializer
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: CategorySerializer(many=True)})

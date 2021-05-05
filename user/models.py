@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from resources.models import Role, University, Category
+from resources.serializers import UniversitySerializer
 from user.managers import CustomUserManager
 
 
@@ -14,7 +15,7 @@ class User(AbstractUser):
     first_name = None
     last_name = None
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    avatar = models.TextField(default="")
+    avatar = models.TextField(default="https://fyp-images-narvitaa.s3.ap-south-1.amazonaws.com/default_avatar.png")
     name = models.CharField(max_length=100)
     email = models.EmailField(_('email address'), unique=True)
     is_active = models.IntegerField(default=0, help_text="0: inactive, 1: active, 2: disabled")
@@ -48,23 +49,31 @@ class UserRole(Model):
     def __str__(self):
         return self.user.email + "::" + self.role.name
 
+    @property
+    def roleName(self):
+        return self.role.name
+
 
 class Student(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     university = models.ForeignKey(University, on_delete=models.SET_NULL, null=True)
     createdAt = models.DateTimeField(auto_now_add=True)
-    dateOfBirth = models.DateTimeField()
+    dateOfBirth = models.DateField()
     gender = models.CharField(max_length=10)
     activeProjects = models.PositiveIntegerField(default=0)
     about = models.TextField()
-    facebook = models.TextField()
+    facebook = models.TextField(null=True, blank=True)
     resumeUrl = models.TextField()
-    linkedIn = models.TextField()
-    gmail = models.TextField()
+    linkedIn = models.TextField(null=True, blank=True)
+    gmail = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.user.name + "" + self.university.name
+
+    @property
+    def universityDetails(self):
+        return UniversitySerializer(self.university).data
 
 
 class StudentCategory(Model):
