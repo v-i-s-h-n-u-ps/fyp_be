@@ -8,10 +8,19 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 
+class UserRoleSerializer(serializers.ModelSerializer):
+    roleName = serializers.ReadOnlyField()
+
+    class Meta:
+        model = UserRole
+        fields = '__all__'
+        extra_fields = ['roleName']
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'avatar']
 
 
 class RefreshTokenSerializer(serializers.Serializer):
@@ -50,3 +59,21 @@ class PasswordResetSerializer(serializers.Serializer):
 class PasswordChangeSerializer(serializers.Serializer):
     old = serializers.CharField()
     new = serializers.CharField()
+
+
+class StudentGetSerializer(serializers.ModelSerializer):
+    universityDetails = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Student
+        exclude = ['university']
+        extra_fields = ['universityDetails']
+
+
+class CreateStudentSerializer(serializers.ModelSerializer):
+    categories = serializers.ListSerializer(child=serializers.UUIDField())
+
+    class Meta:
+        model = Student
+        exclude = ['id', 'createdAt', 'user']
+        extra_fields = ['categories']

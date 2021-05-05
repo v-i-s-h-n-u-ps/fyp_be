@@ -14,12 +14,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fyp_be.settings import EMAIL_HOST_USER, BASE_DIR, CLIENT_ID, CLIENT_SECRET, BASE_URL
-from resources.models import Role
-from user.models import User, OTP, UserRole
+from resources.models import Role, University, Category
+from user.models import User, OTP, UserRole, Student, StudentCategory
 from user.permissions import IsStudent
 from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerializer, RevokeTokenSerializer, \
     SignUpSerializer, ActivateSerializer, PasswordResetTokenSerializer, PasswordResetSerializer, \
-    PasswordChangeSerializer
+    PasswordChangeSerializer, UserRoleSerializer, StudentGetSerializer, CreateStudentSerializer
 
 
 def send_confirmation_email(subject, content, file):
@@ -39,15 +39,27 @@ def generateOTP(digits):
 class UserDetails(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = UserSerializer
+    role_serialzer = UserRoleSerializer
+    student_serializer = StudentGetSerializer
 
     @swagger_auto_schema(response={status.HTTP_200_OK, UserSerializer})
     def get(self, request):
         try:
             user = request.user
-            data = self.serializer_class(user)
             if not user:
                 return Response({'error': "User not found"}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"data": data.data}, status=status.HTTP_200_OK)
+            data = self.serializer_class(user)
+            roles_set = UserRole.objects.filter(user=user)
+            roles = self.role_serialzer(roles_set, many=True)
+            student = Student.objects.filter(user=user)
+            response = {}
+            response["user_info"] = data.data
+            response["user_info"]["roles"] = roles.data
+            if not student:
+                response["student"] = {}
+            else:
+                response["student"] = self.student_serializer(student[0]).data
+            return Response({"data": response}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -92,9 +104,7 @@ class Login(APIView):
                 )
                 if res.status_code == status.HTTP_200_OK:
                     user.update(last_login=timezone.now())
-                    user_data = self.user_serializer(user[0]).data
                     return_data = res.json()
-                    return_data['user_info'] = user_data
                     return Response({"data": return_data}, status=res.status_code)
                 else:
                     return Response(res.json(), status=res.status_code)
@@ -289,6 +299,33 @@ class PasswordChange(APIView):
                 user.set_password(data['new'])
                 user.save()
                 return JsonResponse({"message": 'Password changed successfully'}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateStudent(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = CreateStudentSerializer
+
+    @swagger_auto_schema(request_body=serializer_class)
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                user = request.user
+                university = University.objects.get(id=data['university'])
+                student = Student(user=user, university=university, dateOfBirth=data['dateOfBirth'],about=data['about'],
+                                  facebook=data['facebook'], resumeUrl=data['resumeUrl'], linkedIn=data['linkedIn'],
+                                  gender=data['gender'], gmail=data['email'])
+                student.save()
+                for cat in data['categories']:
+                    category = Category.objects.get(id=cat)
+                    category_obj = StudentCategory(category=category, student=student)
+                    category_obj.save()
+                return JsonResponse({"message": 'Details saved successfully'}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:

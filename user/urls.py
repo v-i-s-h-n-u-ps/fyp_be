@@ -2,7 +2,7 @@
 from django.urls import path
 
 from user.views import Login, RevokeToken, RefreshToken, SignUp, Activate, PasswordResetToken, PasswordReset, \
-    PasswordChange, UserDetails
+    PasswordChange, UserDetails, CreateStudent
 
 urlpatterns = [
     path('login/', Login.as_view(), name='login'),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('password-reset/', PasswordReset.as_view(), name='password-reset'),
     path('password-change/', PasswordChange.as_view(), name='password-change'),
     path('me/', UserDetails.as_view(), name='me'),
+    path('post-student-details/', CreateStudent.as_view(), name='post-student-details'),
 ]
