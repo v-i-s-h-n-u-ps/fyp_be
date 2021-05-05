@@ -26,7 +26,7 @@ Backend server
 
 * python manage.py runserver --settings=fyp_be.settings 8080 --insecure
 
-* python manage.py runserver --settings=fyp_be.settings 0.0.0.0:8080  --> when on server
+* python manage.py runserver --settings=fyp_be.settings    --> when on server
 
 * python manage.py runserver --settings=fyp_be.settings 0.0.0.0:8080 --insecure
 

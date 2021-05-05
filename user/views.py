@@ -36,6 +36,22 @@ def generateOTP(digits):
     return random.randint(lower, upper)
 
 
+class UserDetails(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = UserSerializer
+
+    @swagger_auto_schema(response={status.HTTP_200_OK, UserSerializer})
+    def get(self, request):
+        try:
+            user = request.user
+            data = self.serializer_class(user)
+            if not user:
+                return Response({'error': "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": data.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class Login(APIView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
@@ -48,18 +64,31 @@ class Login(APIView):
 
             if serializer.is_valid():
                 data = serializer.data
+                _user = User.objects.filter(email=data['email'])
+                if not _user.exists():
+                    return Response({"error": {"message": "User not found"}}, status=status.HTTP_404_NOT_FOUND)
+                user_not_active = User.objects.filter(email=data['email'], is_active=0)
+                if user_not_active.exists():
+                    otp = generateOTP(6)
+                    OTP.objects.create(user=user_not_active[0], otp=otp, type="signup")
+                    subject = "Verify your email"
+                    content = {
+                        'email': [user_not_active[0].email],
+                        'otp': otp,
+                        'name': user_not_active[0].name
+                    }
+                    send_confirmation_email(subject, content, 'confirm_registration_email')
+                    return Response({"data": {"message": "Otp sent"}, "code": "USER_NOT_ACTIVE"}, status=status.HTTP_206_PARTIAL_CONTENT)
                 user = User.objects.filter(email=data['email'], is_active=1)
-                if not user.exists():
-                    return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
                 res = requests.post(
                     BASE_URL + 'o/token/',
                     {
                         'grant_type': 'password',
                         'username': data['email'],  # username for oauth is the login we have.
                         'password': data['password'],
-                        'client_id': 'ktqUnxMpuEAuh3Uo5k8o20Tt6grm7kYZ0hbOjJkC', # CLIENT_ID
-                        'client_secret': 'oXfvBtyOznEb2kLyVphAfuxNHfF4WC63NXsp4mIagnopolwZ9qMzvkW5pxFTueaMFcSeShaMfQlTfNtGUrrLrbDmMdGCRvNIon5RYirJbfYg39WesTK9CSGbLob9CXft', # CLIENT_SECRET
-                    }
+                        'client_id': 'ktqUnxMpuEAuh3Uo5k8o20Tt6grm7kYZ0hbOjJkC',
+                        'client_secret': 'oXfvBtyOznEb2kLyVphAfuxNHfF4WC63NXsp4mIagnopolwZ9qMzvkW5pxFTueaMFcSeShaMfQlTfNtGUrrLrbDmMdGCRvNIon5RYirJbfYg39WesTK9CSGbLob9CXft',
+                    },
                 )
                 if res.status_code == status.HTTP_200_OK:
                     user.update(last_login=timezone.now())
@@ -69,7 +98,7 @@ class Login(APIView):
                     return Response({"data": return_data}, status=res.status_code)
                 else:
                     return Response(res.json(), status=res.status_code)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -95,7 +124,7 @@ class RefreshToken(APIView):
                 )
                 return Response({"data": res.json()}, status=res.status_code)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -118,9 +147,9 @@ class RevokeToken(APIView):
                         'client_secret': CLIENT_SECRET,
                     }
                 )
-                return Response({"message": "Token Revoked"}, status=res.status_code)
+                return Response({"data": {"message": "Token Revoked"}}, status=res.status_code)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -135,9 +164,11 @@ class SignUp(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 data = serializer.data
+                role = Role.objects.get(name=data['role'])
+                if not role:
+                    return JsonResponse({"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST)
                 custom_user = User(email=data['email'], password=make_password(data['password']),
                                    name=data['name'])
-                role = Role.objects.get(name=data['role'])
                 custom_user.save()
                 user_role = UserRole(user=custom_user, role=role)
                 user_role.save()
@@ -152,7 +183,7 @@ class SignUp(APIView):
                 send_confirmation_email(subject, content, 'confirm_registration_email')
                 return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -174,11 +205,12 @@ class Activate(APIView):
                     otp_obj = OTP.objects.filter(user=user[0], otp=data['otp'])
                     if not otp_obj.exists():
                         return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
+                    _type = otp_obj[0].type
                     otp_obj.delete()
                     user.update(is_active=1)
                     return Response({'message': "Verification successful"}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -207,7 +239,7 @@ class PasswordResetToken(APIView):
                 send_confirmation_email(subject, content, 'reset_password_email')
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -222,7 +254,7 @@ class PasswordReset(APIView):
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 data = serializer.data
-                users = User.objects.filter(email=data['email'], is_active=1)
+                users = User.objects.filter(email=data['email'])
                 if not users.exists():
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
                 user = users[0]
@@ -230,11 +262,13 @@ class PasswordReset(APIView):
                 if not otp_obj.exists():
                     return Response({"message": "Invalid otp."}, status=status.HTTP_400_BAD_REQUEST)
                 otp_obj.delete()
+                users.update(is_active=1)
+                OTP.objects.filter(user=user).delete()
                 user.set_password(data['password'])
                 user.save()
                 return JsonResponse({"message": 'Password reset successfully'}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -256,7 +290,7 @@ class PasswordChange(APIView):
                 user.save()
                 return JsonResponse({"message": 'Password changed successfully'}, status=status.HTTP_200_OK)
             else:
-                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 

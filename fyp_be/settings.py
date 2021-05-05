@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sslserver',
     'drf_yasg',
     'oauth2_provider',
     'corsheaders',
@@ -187,5 +188,6 @@ EMAIL_HOST_PASSWORD = 'fyp@1234'
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 BASE_URL = 'http://127.0.0.1:8000/'
 AUTH_USER_MODEL = 'user.User'
