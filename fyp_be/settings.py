@@ -162,8 +162,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-CLIENT_ID = 'smJLvtdyMaqumAo4uv9Xly3ozpiaYNayjVNW4uF2'
-CLIENT_SECRET = 'lQzhxMPsXyDRsbmVNejldiLPV3SEYNOkxmWWnAJDSN007Hr5yCmipgMdr7RW57V4hfRnG9LtReZnWO2kxM4fEPk9lUI0BZhIk9msWF1jn1Fx9DhOXxtHtUKfa7LTWFma'
+CLIENT_ID = 'ktqUnxMpuEAuh3Uo5k8o20Tt6grm7kYZ0hbOjJkC'
+CLIENT_SECRET = 'oXfvBtyOznEb2kLyVphAfuxNHfF4WC63NXsp4mIagnopolwZ9qMzvkW5pxFTueaMFcSeShaMfQlTfNtGUrrLrbDmMdGCRvNIon5RYirJbfYg39WesTK9CSGbLob9CXft'
 
 LANGUAGE_CODE = 'en-us'
 
