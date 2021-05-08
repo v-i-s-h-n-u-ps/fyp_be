@@ -319,7 +319,7 @@ class CreateStudent(APIView):
                 university = University.objects.get(id=data['university'])
                 student = Student(user=user, university=university, dateOfBirth=data['dateOfBirth'],about=data['about'],
                                   facebook=data['facebook'], resumeUrl=data['resumeUrl'], linkedIn=data['linkedIn'],
-                                  gender=data['gender'], gmail=data['email'])
+                                  gender=data['gender'], gmail=data['gmail'])
                 student.save()
                 for cat in data['categories']:
                     category = Category.objects.get(id=cat)
@@ -331,11 +331,12 @@ class CreateStudent(APIView):
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class ResendOTP(APIView):
-    permission_classes = [AllowAny]
+
+class Resend(APIView):
+    permission_classes = [AllowAny],
     serializer_class = PasswordResetTokenSerializer
 
-    @swagger_auto_schema(query_serializer=PasswordResetTokenSerializer)
+    @swagger_auto_schema(query_serializer=serializer_class)
     def get(self, request):
         try:
             serializer = self.serializer_class(data=request.query_params)
@@ -344,26 +345,21 @@ class ResendOTP(APIView):
                 user = User.objects.filter(email=data['email'])
                 if not user.exists():
                     return Response({"message": "Email id not registered."}, status=status.HTTP_404_NOT_FOUND)
-                otp = OTP.objects.filter(user=user[0])
-                if not otp.exists():
+
+                _otp = OTP.objects.filter(email=data['email'])
+                if not _otp.exists():
                     otp = generateOTP(6)
                     OTP.objects.create(user=user[0], otp=otp, type="signup")
-                    subject = "Welcome to Auxiliar"
-                    content = {
-                        'email': [user[0].email],
-                        'otp': otp,
-                        'name': user[0].name
-                    }
                 else:
-                    _otp = otp[0].otp
-                    subject = "Welcome to Auxiliar"
-                    content = {
-                        'email': [user[0].email],
-                        'otp': _otp,
-                        'name': user[0].name
-                    }
+                    otp = _otp[0].otp
+                subject = "Welcome to Auxiliar"
+                content = {
+                    'email': [user[0].email],
+                    'otp': otp,
+                    'name': user[0].name
+                }
                 send_confirmation_email(subject, content, 'confirm_registration_email')
-                return JsonResponse({"data": "Successful"}, status=status.HTTP_200_OK)
+                return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
