@@ -52,10 +52,14 @@ class GetProjectDetailsSerializer(serializers.ModelSerializer):
 class GetProjectSummarySerializer(serializers.ModelSerializer):
     createdBy = serializers.ReadOnlyField()
     avatar = serializers.ReadOnlyField()
+    created_id = serializers.ReadOnlyField()
+    university = serializers.ReadOnlyField()
+    email = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'createdBy', 'avatar', 'startDate', 'endDate', 'description']
+        fields = ['id', 'name', 'createdBy', 'avatar', 'startDate', 'endDate', 'description', 'isComplete', 'isDeferred',
+                  'created_id', 'university', 'email']
 
 
 class ManageProjectParticipantSerializer(serializers.Serializer):

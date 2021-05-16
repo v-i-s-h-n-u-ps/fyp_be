@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Model
 
 from resources.models import University, Category, Type
+from resources.serializers import UniversitySerializer
 from user.models import User
 
 
@@ -31,6 +32,17 @@ class Project(Model):
     def avatar(self):
         return self.user.avatar
 
+    @property
+    def created_id(self):
+        return self.user.id
+
+    @property
+    def university(self):
+        return UniversitySerializer(self.location).data
+
+    def email(self):
+        return  self.user.email
+
 
 class ProjectCategory(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -54,7 +66,7 @@ class ProjectParticipant(Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.project.name + " :: " + self.student.user.name
+        return self.project.name + " :: " + self.student.name
 
     @property
     def name(self):
