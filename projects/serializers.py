@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from projects.models import Project, ProjectParticipant, ProjectCount, ProjectTask
+from projects.models import Project, ProjectParticipant, ProjectCount, ProjectTask, ProjectCategory
 
 
 class CreateProjectSerializer(serializers.ModelSerializer):
@@ -22,17 +22,19 @@ class UpdateProjectDetailsSerializer(serializers.ModelSerializer):
 class ProjectParticipantSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
     avatar = serializers.ReadOnlyField()
+    email = serializers.ReadOnlyField()
+    userId = serializers.ReadOnlyField()
 
     class Meta:
         model = ProjectParticipant
-        fields = ['id', 'name', 'avatar', 'isLeader', 'createdAt']
+        fields = ['id', 'name', 'avatar', 'isLeader', 'createdAt', 'email', 'userId']
 
 
 class ProjectCategorySerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField()
 
     class Meta:
-        model = ProjectParticipant
+        model = ProjectCategory
         fields = ['id', 'category_name', 'createdAt', 'category']
 
 
@@ -79,15 +81,18 @@ class AddProjectTaskSerializer(serializers.ModelSerializer):
 
 
 class UpdateProjectTaskSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
     class Meta:
         model = ProjectTask
-        exclude = ['project', 'user', 'createdAt']
+        fields = ['id', 'task', 'type', 'dueDate', 'isComplete']
 
 
 class GetProjectTaskSerializer(serializers.ModelSerializer):
     type_name = serializers.ReadOnlyField()
+    username = serializers.ReadOnlyField()
 
     class Meta:
         model = ProjectTask
         fields = '__all__'
-        extra_fields = ['type_name']
+        extra_fields = ['type_name', 'username']
