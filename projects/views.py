@@ -73,6 +73,8 @@ class CreateProject(APIView):
                 project = Project(user=user, name=data['name'], location=location, startDate=data['startDate'],
                                   endDate=data['endDate'], description=data['description'])
                 project.save()
+                count = ProjectCount(project=project)
+                count.save()
                 for cat in data['categories']:
                     category = Category.objects.get(id=cat)
                     category_obj = ProjectCategory(category=category, project=project)
@@ -99,12 +101,18 @@ class GetProject(APIView):
             project = Project.objects.get(id=id)
             if not project:
                 return JsonResponse({'error': 'Project Not Found'}, status=status.HTTP_400_BAD_REQUEST)
-            data = self.serializer_class(project)
+            data = self.serializer_class(instance=project)
             category = ProjectCategory.objects.filter(project=project)
             data_category = self.category_serializer(instance=category, many=True)
-            count = ProjectCount.objects.get(project=project)
-            data_count = self.count_serializer(instance=count)
-            return_obj = data.data | data_count.data
+            count = ProjectCount.objects.filter(project=project)
+            data_count = None
+            if count:
+                data_count = self.count_serializer(count[0])
+                data_count = data_count.data
+            if not data_count:
+                return_obj = data.data
+            else:
+                return_obj = data.data | data_count
             return_obj['categories'] = data_category.data
             return JsonResponse({"data": return_obj}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -124,7 +132,7 @@ class GetProjectParticipants(APIView):
             if not project:
                 return JsonResponse({'error': 'Project Not Found'}, status=status.HTTP_400_BAD_REQUEST)
             users = ProjectParticipant.objects.filter(project=project)
-            data_users = self.participant_serializer(instance=users, many=True)
+            data_users = self.serializer_class(instance=users, many=True)
             return JsonResponse({"data": data_users.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -224,10 +232,10 @@ class ManageProjectParticipant(APIView):
                 if not _user:
                     return JsonResponse({'error': "User not found"}, status=status.HTTP_400_BAD_REQUEST)
                 if data['action'] == 1:
-                    participant = ProjectParticipant(project=project, student=_user)
+                    participant = ProjectParticipant(project=project[0], student=_user)
                     participant.save()
                 else:
-                    ProjectParticipant.objects.filter(project=project, student=_user).delete()
+                    ProjectParticipant.objects.filter(project=project[0], student=_user).delete()
                 return JsonResponse({'data': "Users updated"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -247,14 +255,17 @@ class AddProjectTask(APIView):
                 data = serializer.data
                 user = request.user
                 project = Project.objects.filter(id=data['project'])
+                print(project, "prijc")
                 if not project:
                     return JsonResponse({'error': "This is not your project"}, status=status.HTTP_400_BAD_REQUEST)
-                participant = ProjectParticipant.objects.filter(project=project, user=user)
+                participant = ProjectParticipant.objects.filter(project=project[0], student=user)
+                print(participant, "prad")
                 if not participant:
                     return JsonResponse({'error': "You're not part of this project"},
                                         status=status.HTTP_400_BAD_REQUEST)
-                _type = Type.objects.get(name=data['type'])
-                task = ProjectTask(task=data['task'], type=_type, project=project, user=user, dueDate=data['dueDate'])
+                print(data)
+                _type = Type.objects.get(id=data['type'])
+                task = ProjectTask(task=data['task'], type=_type, project=project[0], user=user, dueDate=data['dueDate'])
                 task.save()
                 return JsonResponse({'data': task.id}, status=status.HTTP_201_CREATED)
             else:
@@ -277,7 +288,7 @@ class UpdateProjectTask(APIView):
                 task = ProjectTask.objects.filter(id=data['id'], user=user)
                 if not task:
                     return JsonResponse({'error': "This is not your task"}, status=status.HTTP_400_BAD_REQUEST)
-                _type = Type.objects.get(name=data['type'])
+                _type = Type.objects.get(id=data['type'])
                 task.update(task=data['task'], type=_type, dueDate=data['dueDate'], isComplete=data['isComplete'])
                 return JsonResponse({'data': "Updated"}, status=status.HTTP_200_OK)
             else:
@@ -296,22 +307,22 @@ class GetProjectTask(APIView):
     def get(self, request):
         try:
             user = request.user
-            id = request.GET.get('project')
-            page = request.GET.get('page')
+            id = request.GET.get('id')
+            print(id)
             if not id:
                 tasks = ProjectTask.objects.filter(user=user).order_by('dueDate', 'createdAt')
             else:
                 project = Project.objects.get(id=id)
                 tasks = ProjectTask.objects.filter(user=user, project=project).order_by('dueDate', 'createdAt')
-            _projects = self.pagination_class(tasks)
-            try:
-                tasks = self.pagination_class.page(page)
-            except PageNotAnInteger:
-                tasks = self.pagination_class.page(1)
-            except EmptyPage:
-                tasks = self.pagination_class.page(self.pagination_class.num_pages)
+            # _projects = self.pagination_class(tasks)
+            # try:
+            #     tasks = self.pagination_class.page(page)
+            # except PageNotAnInteger:
+            #     tasks = self.pagination_class.page(1)
+            # except EmptyPage:
+            #     tasks = self.pagination_class.page(self.pagination_class.num_pages)
             data = self.serializer_class(tasks, many=True)
-            response = self.pagination_class.get_paginated_response(data.data)
-            return JsonResponse({"data": response}, status=status.HTTP_200_OK)
+            # response = self.pagination_class.get_paginated_response(data.data)
+            return JsonResponse({"data": data.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)

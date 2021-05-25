@@ -76,6 +76,14 @@ class ProjectParticipant(Model):
     def avatar(self):
         return self.student.avatar
 
+    @property
+    def email(self):
+        return self.student.email
+
+    @property
+    def userId(self):
+        return self.student.id
+
 
 class ProjectCount(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -103,3 +111,7 @@ class ProjectTask(Model):
     @property
     def type_name(self):
         return self.type.name
+
+    @property
+    def username(self):
+        return self.user.name
