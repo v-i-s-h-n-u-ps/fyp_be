@@ -67,6 +67,7 @@ class Student(Model):
     resumeUrl = models.TextField()
     linkedIn = models.TextField(null=True, blank=True)
     gmail = models.TextField(null=True, blank=True)
+    twitter = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.user.name + "" + self.university.name
@@ -83,3 +84,7 @@ class StudentCategory(Model):
 
     def __str__(self):
         return self.student.user.name + "::" + self.category.name
+
+    @property
+    def categoryName(self):
+        return self.category.name

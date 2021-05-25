@@ -77,3 +77,21 @@ class CreateStudentSerializer(serializers.ModelSerializer):
         model = Student
         exclude = ['id', 'createdAt', 'user']
         extra_fields = ['categories']
+
+
+class UpdateStudentSerializer(serializers.ModelSerializer):
+    categories = serializers.ListSerializer(child=serializers.UUIDField())
+    id = serializers.UUIDField()
+
+    class Meta:
+        model = Student
+        exclude = ['createdAt', 'user']
+        extra_fields = ['id', 'categories']
+
+
+class StudentCategoryGetSerializer(serializers.ModelSerializer):
+    categoryName = serializers.ReadOnlyField()
+
+    class Meta:
+        model = StudentCategory
+        fields = ['id', 'category', 'categoryName']

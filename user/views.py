@@ -4,6 +4,7 @@ import requests
 from django.conf.global_settings import EMAIL_HOST_USER
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -19,12 +20,13 @@ from user.models import User, OTP, UserRole, Student, StudentCategory
 from user.permissions import IsStudent
 from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerializer, RevokeTokenSerializer, \
     SignUpSerializer, ActivateSerializer, PasswordResetTokenSerializer, PasswordResetSerializer, \
-    PasswordChangeSerializer, UserRoleSerializer, StudentGetSerializer, CreateStudentSerializer
+    PasswordChangeSerializer, UserRoleSerializer, StudentGetSerializer, CreateStudentSerializer, \
+    StudentCategoryGetSerializer, UpdateStudentSerializer
 
 
 def send_confirmation_email(subject, content, file):
     try:
-        body = render_to_string(BASE_DIR + '/templates/'+file+'.html', content)
+        body = render_to_string(BASE_DIR + '/templates/' + file + '.html', content)
         send_mail(subject, '', EMAIL_HOST_USER, content['email'], html_message=body, fail_silently=False)
     except Exception as e:
         print(repr(e))
@@ -41,6 +43,7 @@ class UserDetails(APIView):
     serializer_class = UserSerializer
     role_serialzer = UserRoleSerializer
     student_serializer = StudentGetSerializer
+    student_category_serializer = StudentCategoryGetSerializer
 
     @swagger_auto_schema(response={status.HTTP_200_OK, UserSerializer})
     def get(self, request):
@@ -59,6 +62,9 @@ class UserDetails(APIView):
                 response["student"] = {}
             else:
                 response["student"] = self.student_serializer(student[0]).data
+                student_category = StudentCategory.objects.filter(student=student[0])
+                categories = self.student_category_serializer(student_category, many=True)
+                response["student"]["categories"] = categories.data
             return Response({"data": response}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -90,7 +96,8 @@ class Login(APIView):
                         'name': user_not_active[0].name
                     }
                     send_confirmation_email(subject, content, 'confirm_registration_email')
-                    return Response({"data": {"message": "Otp sent"}, "code": "USER_NOT_ACTIVE"}, status=status.HTTP_206_PARTIAL_CONTENT)
+                    return Response({"data": {"message": "Otp sent"}, "code": "USER_NOT_ACTIVE"},
+                                    status=status.HTTP_206_PARTIAL_CONTENT)
                 user = User.objects.filter(email=data['email'], is_active=1)
                 res = requests.post(
                     BASE_URL + 'o/token/',
@@ -191,7 +198,8 @@ class SignUp(APIView):
                     'name': custom_user.name
                 }
                 send_confirmation_email(subject, content, 'confirm_registration_email')
-                return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"}, status=status.HTTP_201_CREATED)
+                return JsonResponse({"user": custom_user.pk, "message": "Registered successfully"},
+                                    status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -317,7 +325,8 @@ class CreateStudent(APIView):
                 data = serializer.data
                 user = request.user
                 university = University.objects.get(id=data['university'])
-                student = Student(user=user, university=university, dateOfBirth=data['dateOfBirth'],about=data['about'],
+                student = Student(user=user, university=university, dateOfBirth=data['dateOfBirth'],
+                                  about=data['about'],
                                   facebook=data['facebook'], resumeUrl=data['resumeUrl'], linkedIn=data['linkedIn'],
                                   gender=data['gender'], gmail=data['gmail'])
                 student.save()
@@ -332,8 +341,45 @@ class CreateStudent(APIView):
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UpdateStudent(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = UpdateStudentSerializer
+
+    @swagger_auto_schema(request_body=serializer_class)
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                user = request.user
+                university = University.objects.get(id=data['university'])
+                student = Student.objects.filter(id=data['id'])
+                student.update(user=user, university=university,
+                               dateOfBirth=data['dateOfBirth'],
+                               about=data['about'], twitter=data['twitter'],
+                               facebook=data['facebook'],
+                               resumeUrl=data['resumeUrl'],
+                               linkedIn=data['linkedIn'],
+                               gender=data['gender'], gmail=data['gmail'])
+                StudentCategory.objects.filter(student=student[0]).delete()
+                for cat in data['categories']:
+                    print("dfdf", cat)
+
+                    category = Category.objects.get(id=cat)
+                    print("dfdf")
+                    category_obj = StudentCategory(category=category, student=student[0])
+                    print("dfdf")
+
+                    category_obj.save()
+                return JsonResponse({"message": 'Details saved successfully'}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class Resend(APIView):
-    permission_classes = [AllowAny],
+    permission_classes = [AllowAny]
     serializer_class = PasswordResetTokenSerializer
 
     @swagger_auto_schema(query_serializer=serializer_class)
@@ -362,5 +408,24 @@ class Resend(APIView):
                 return JsonResponse({"data": "Reset your password"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SearchUsers(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+
+    def get(self, request):
+        print("heree")
+        try:
+            search = request.GET.get('search')
+            print(search)
+            if len(search) > 1:
+                users = User.objects.filter(Q(name__contains=search) | Q(email__contains=search))
+                data = self.serializer_class(users, many=True)
+                return JsonResponse({"data": data.data}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse({"data": {}}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)

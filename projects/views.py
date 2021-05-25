@@ -1,4 +1,4 @@
-from django.core.paginator import PageNotAnInteger, EmptyPage
+from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 
@@ -18,8 +18,42 @@ from user.permissions import IsStudent
 
 class ResultsSetPagination(PageNumberPagination):
     page_size = 20
-    page_size_query_param = 'page_size'
+    page_size_query_param = 'page'
     max_page_size = 10000
+
+
+def getPaginatedResponse(paginated, paginator, page):
+    return {
+        'next': paginated.next_page_number() if paginated.has_next() else None,
+        'prev': paginated.previous_page_number() if paginated.has_previous() else None,
+        'current': page,
+        'total': paginator.num_pages
+    }
+
+
+class ListProjects(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GetProjectSummarySerializer
+    queryset = Project.objects.all().order_by('startDate')
+    filterset_fields = ['page', 'size']
+
+    @swagger_auto_schema(responses={status.HTTP_200_OK: GetProjectSummarySerializer(many=True)})
+    def get(self, request):
+        page = int(request.GET.get('page', 1))
+        size = int(request.GET.get('size', 20))
+        projects = self.queryset.filter(isComplete=False)
+        paginator = Paginator(projects, size)
+        try:
+            project = paginator.page(page)
+        except PageNotAnInteger:
+            project = paginator.page(1)
+        except EmptyPage:
+            project = paginator.page(paginator.num_pages)
+        response = {
+            "data": self.serializer_class(project.object_list, many=True).data,
+            "pageInfo": getPaginatedResponse(project, paginator, page)
+        }
+        return JsonResponse({"data": response}, status=status.HTTP_200_OK)
 
 
 class CreateProject(APIView):
@@ -137,10 +171,10 @@ class GetMyProjects(APIView):
             user = request.user
             if not user:
                 return JsonResponse({'error': 'User Not Found'}, status=status.HTTP_400_BAD_REQUEST)
-            my_projects = ProjectParticipant.filter(student=user).order_by('isLeader')
+            my_projects = ProjectParticipant.objects.filter(student=user).order_by('isLeader')
             return_obj = []
             for proj in my_projects:
-                project = Project.objects.get(id=proj.id)
+                project = Project.objects.get(id=proj.project.id)
                 project_data = self.serializer_class(instance=project)
                 return_obj.append(project_data.data)
             return JsonResponse({"data": return_obj}, status=status.HTTP_200_OK)
@@ -148,27 +182,26 @@ class GetMyProjects(APIView):
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ListProjects(APIView):
-    permission_classes = [IsAuthenticated]
+class GetFilteredProjects(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = GetProjectSummarySerializer
-    pagination_class = ResultsSetPagination
-    filterset_fields = ['page']
+    filterset_fields = ['isComplete']
 
-    @swagger_auto_schema(responses={status.HTTP_200_OK: GetProjectSummarySerializer(many=True)})
+    @swagger_auto_schema(responses={status.HTTP_200_OK: serializer_class(many=True)})
     def get(self, request):
         try:
-            page = request.GET.get('page')
-            project = Project.objects.all().order_by('startDate')
-            _projects = self.pagination_class(project)
-            try:
-                project = self.pagination_class.page(page)
-            except PageNotAnInteger:
-                project = self.pagination_class.page(1)
-            except EmptyPage:
-                project = self.pagination_class.page(self.pagination_class.num_pages)
-            data = self.serializer_class(project, many=True)
-            response = self.pagination_class.get_paginated_response(data.data)
-            return JsonResponse({"data": response}, status=status.HTTP_200_OK)
+            user = request.user
+            isComplete = request.GET.get('isComplete')
+            print(isComplete, "is complete", request.GET.get('current'))
+            if not user:
+                return JsonResponse({'error': 'User Not Found'}, status=status.HTTP_400_BAD_REQUEST)
+            my_projects = ProjectParticipant.objects.filter(student=user).order_by('isLeader')
+            return_obj = []
+            for proj in my_projects:
+                project = Project.objects.filter(id=proj.id, isComplete=isComplete)
+                project_data = self.serializer_class(instance=project[0])
+                return_obj.append(project_data.data)
+            return JsonResponse({"data": return_obj}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -218,7 +251,8 @@ class AddProjectTask(APIView):
                     return JsonResponse({'error': "This is not your project"}, status=status.HTTP_400_BAD_REQUEST)
                 participant = ProjectParticipant.objects.filter(project=project, user=user)
                 if not participant:
-                    return JsonResponse({'error': "You're not part of this project"}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({'error': "You're not part of this project"},
+                                        status=status.HTTP_400_BAD_REQUEST)
                 _type = Type.objects.get(name=data['type'])
                 task = ProjectTask(task=data['task'], type=_type, project=project, user=user, dueDate=data['dueDate'])
                 task.save()
