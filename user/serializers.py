@@ -95,3 +95,8 @@ class StudentCategoryGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentCategory
         fields = ['id', 'category', 'categoryName']
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    avatar = serializers.CharField()
+    name = serializers.CharField()
