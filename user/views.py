@@ -21,7 +21,7 @@ from user.permissions import IsStudent
 from user.serializers import LoginSerializer, UserSerializer, RefreshTokenSerializer, RevokeTokenSerializer, \
     SignUpSerializer, ActivateSerializer, PasswordResetTokenSerializer, PasswordResetSerializer, \
     PasswordChangeSerializer, UserRoleSerializer, StudentGetSerializer, CreateStudentSerializer, \
-    StudentCategoryGetSerializer, UpdateStudentSerializer
+    StudentCategoryGetSerializer, UpdateStudentSerializer, UpdateUserSerializer
 
 
 def send_confirmation_email(subject, content, file):
@@ -66,6 +66,25 @@ class UserDetails(APIView):
                 categories = self.student_category_serializer(student_category, many=True)
                 response["student"]["categories"] = categories.data
             return Response({"data": response}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateUser(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UpdateUserSerializer
+
+    @swagger_auto_schema(response={status.HTTP_200_OK, serializer_class})
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                user = request.user
+                User.objects.filter(id=user.id).update(avatar=data['avatar'], name=data['name'])
+                return Response({"data": "Updated"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
 

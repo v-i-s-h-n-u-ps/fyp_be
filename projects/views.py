@@ -112,7 +112,8 @@ class GetProject(APIView):
             if not data_count:
                 return_obj = data.data
             else:
-                return_obj = data.data | data_count
+                return_obj = data.data
+                return_obj["counts"] = data_count
             return_obj['categories'] = data_category.data
             return JsonResponse({"data": return_obj}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -265,7 +266,8 @@ class AddProjectTask(APIView):
                                         status=status.HTTP_400_BAD_REQUEST)
                 print(data)
                 _type = Type.objects.get(id=data['type'])
-                task = ProjectTask(task=data['task'], type=_type, project=project[0], user=user, dueDate=data['dueDate'])
+                task = ProjectTask(task=data['task'], type=_type, project=project[0], user=user,
+                                   dueDate=data['dueDate'])
                 task.save()
                 return JsonResponse({'data': task.id}, status=status.HTTP_201_CREATED)
             else:

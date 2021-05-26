@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.staticfiles.views import serve
 from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -39,7 +38,6 @@ urlpatterns = [
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_URL}),
     path('user/', include('user.urls')),
     path('resources/', include('resources.urls')),
     path('others/', include('others.urls')),
