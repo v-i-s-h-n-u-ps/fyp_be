@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from others.models import Task, Forum
+from others.models import Task, Forum, ForumCategory
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
@@ -25,15 +25,17 @@ class CreateForumSerializer(serializers.ModelSerializer):
 
 class GetForumSerializer(serializers.ModelSerializer):
     user_name = serializers.ReadOnlyField()
+    avatar = serializers.ReadOnlyField()
 
     class Meta:
         model = Forum
         fields = '__all__'
-        extra_fields = ['user_name']
+        extra_fields = ['user_name', 'avatar']
 
 
 class UpdateForumSerializer(serializers.ModelSerializer):
     categories = serializers.ListSerializer(child=serializers.UUIDField())
+    id = serializers.UUIDField()
 
     class Meta:
         model = Forum
@@ -43,4 +45,13 @@ class UpdateForumSerializer(serializers.ModelSerializer):
 class UpdateUserOfForumSerializer(serializers.Serializer):
     forum = serializers.UUIDField()
     user = serializers.UUIDField()
-    type = serializers.CharField(help_text="1: add/0: remove")
+    type = serializers.IntegerField(help_text="1: add/0: remove")
+
+
+class ForumCategorySerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ForumCategory
+        exclude = ['forum']
+        extra_fields = ['name']
