@@ -347,7 +347,7 @@ class CreateStudent(APIView):
                 student = Student(user=user, university=university, dateOfBirth=data['dateOfBirth'],
                                   about=data['about'],
                                   facebook=data['facebook'], resumeUrl=data['resumeUrl'], linkedIn=data['linkedIn'],
-                                  gender=data['gender'], gmail=data['gmail'])
+                                  gender=data['gender'], gmail=data['gmail'], twitter=data['twitter'])
                 student.save()
                 for cat in data['categories']:
                     category = Category.objects.get(id=cat)

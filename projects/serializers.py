@@ -13,10 +13,11 @@ class CreateProjectSerializer(serializers.ModelSerializer):
 
 class UpdateProjectDetailsSerializer(serializers.ModelSerializer):
     categories = serializers.ListSerializer(child=serializers.UUIDField())
+    id = serializers.UUIDField()
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'location', 'startDate', 'endDate', 'description', 'categories']
+        fields = ['id', 'name', 'location', 'startDate', 'endDate', 'description', 'categories', 'isComplete']
 
 
 class ProjectParticipantSerializer(serializers.ModelSerializer):

@@ -23,6 +23,10 @@ class Forum(Model):
     def user_name(self):
         return self.user.name
 
+    @property
+    def avatar(self):
+        return self.user.avatar
+
 
 class ForumUser(Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -44,8 +48,11 @@ class ForumUser(Model):
         return {
             "isAdmin": self.isAdmin,
             "name": self.user.name,
-            "avatar": self.user.avatar
+            "avatar": self.user.avatar,
+            "userId": self.user.id,
+            "email": self.user.email
         }
+        return UniversitySerializer(self.location).data
 
 
 class ForumCategory(Model):
@@ -56,6 +63,10 @@ class ForumCategory(Model):
 
     def __str__(self):
         return self.forum.name + "::" + self.category.name
+
+    @property
+    def name(self):
+        return self.category.name
 
 
 class Task(Model):
