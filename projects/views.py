@@ -156,7 +156,7 @@ class UpdateProject(APIView):
                 if not admin_status:
                     return JsonResponse({'data': 'This is not your project'}, status=status.HTTP_200_OK)
                 Project.objects.filter(id=data['id']).update(name=data['name'], location=location,
-                                                             startDate=data['startDate'],
+                                                             startDate=data['startDate'], isComplete=data['isComplete'],
                                                              endDate=data['endDate'], description=data['description'])
                 ProjectCategory.objects.filter(project=project).delete()
                 for cat in data['categories']:
