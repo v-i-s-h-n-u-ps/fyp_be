@@ -53,6 +53,10 @@ class ListProjects(APIView):
             "data": self.serializer_class(project.object_list, many=True).data,
             "pageInfo": getPaginatedResponse(project, paginator, page)
         }
+        for proj in response["data"]:
+            _categories = ProjectCategory.objects.filter(project=proj["id"])
+            categories = ProjectCategorySerializer(_categories, many=True)
+            proj["categories"] = categories.data
         return JsonResponse({"data": response}, status=status.HTTP_200_OK)
 
 
