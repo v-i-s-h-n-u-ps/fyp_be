@@ -188,8 +188,11 @@ class GetMyProjects(APIView):
             return_obj = []
             for proj in my_projects:
                 project = Project.objects.get(id=proj.project.id)
-                project_data = self.serializer_class(instance=project)
-                return_obj.append(project_data.data)
+                project_data = self.serializer_class(instance=project).data
+                _categories = ProjectCategory.objects.filter(project=project_data["id"])
+                categories = ProjectCategorySerializer(_categories, many=True)
+                project_data["categories"] = categories.data
+                return_obj.append(project_data)
             return JsonResponse({"data": return_obj}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
