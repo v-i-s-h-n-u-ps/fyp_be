@@ -66,7 +66,7 @@ class ProjectParticipant(Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.project.name + " :: " + self.student.name
+        return self.project.name + " :: " + self.student.email
 
     @property
     def name(self):

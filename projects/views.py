@@ -10,7 +10,8 @@ from rest_framework.views import APIView
 from projects.models import Project, ProjectCategory, ProjectParticipant, ProjectCount, ProjectTask
 from projects.serializers import CreateProjectSerializer, ProjectParticipantSerializer, UpdateProjectDetailsSerializer, \
     ProjectCategorySerializer, ProjectCountSerializer, GetProjectDetailsSerializer, GetProjectSummarySerializer, \
-    ManageProjectParticipantSerializer, AddProjectTaskSerializer, UpdateProjectTaskSerializer, GetProjectTaskSerializer
+    ManageProjectParticipantSerializer, AddProjectTaskSerializer, UpdateProjectTaskSerializer, GetProjectTaskSerializer, \
+    IdSerializer
 from resources.models import University, Category, Type
 from user.models import User
 from user.permissions import IsStudent
@@ -147,7 +148,7 @@ class UpdateProject(APIView):
     permission_classes = [IsAuthenticated, IsStudent]
     serializer_class = UpdateProjectDetailsSerializer
 
-    @swagger_auto_schema(request_body=UpdateProjectDetailsSerializer)
+    @swagger_auto_schema(request_body=serializer_class)
     def post(self, request):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -208,7 +209,6 @@ class GetFilteredProjects(APIView):
         try:
             user = request.user
             isComplete = request.GET.get('isComplete')
-            print(isComplete, "is complete", request.GET.get('current'))
             if not user:
                 return JsonResponse({'error': 'User Not Found'}, status=status.HTTP_400_BAD_REQUEST)
             my_projects = ProjectParticipant.objects.filter(student=user).order_by('isLeader')
@@ -263,15 +263,12 @@ class AddProjectTask(APIView):
                 data = serializer.data
                 user = request.user
                 project = Project.objects.filter(id=data['project'])
-                print(project, "prijc")
                 if not project:
                     return JsonResponse({'error': "This is not your project"}, status=status.HTTP_400_BAD_REQUEST)
                 participant = ProjectParticipant.objects.filter(project=project[0], student=user)
-                print(participant, "prad")
                 if not participant:
                     return JsonResponse({'error': "You're not part of this project"},
                                         status=status.HTTP_400_BAD_REQUEST)
-                print(data)
                 _type = Type.objects.get(id=data['type'])
                 task = ProjectTask(task=data['task'], type=_type, project=project[0], user=user,
                                    dueDate=data['dueDate'])
@@ -317,7 +314,6 @@ class GetProjectTask(APIView):
         try:
             user = request.user
             id = request.GET.get('id')
-            print(id)
             if not id:
                 tasks = ProjectTask.objects.filter(user=user).order_by('dueDate', 'createdAt')
             else:
@@ -333,5 +329,28 @@ class GetProjectTask(APIView):
             data = self.serializer_class(tasks, many=True)
             # response = self.pagination_class.get_paginated_response(data.data)
             return JsonResponse({"data": data.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteProject(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+    serializer_class = IdSerializer
+
+    @swagger_auto_schema(request_body=serializer_class)
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                user = request.user
+                _id = serializer.data['id']
+                if not _id:
+                    return JsonResponse({'error': "Invalid Project"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    project = Project.objects.filter(id=_id)
+                    project.delete()
+                    return JsonResponse({"data": "Deleted"}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
