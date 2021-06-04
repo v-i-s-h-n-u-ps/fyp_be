@@ -13,8 +13,9 @@ from projects.serializers import CreateProjectSerializer, ProjectParticipantSeri
     ManageProjectParticipantSerializer, AddProjectTaskSerializer, UpdateProjectTaskSerializer, GetProjectTaskSerializer, \
     IdSerializer
 from resources.models import University, Category, Type
-from user.models import User
+from user.models import User, Student, StudentCategory
 from user.permissions import IsStudent
+from user.serializers import UserSerializer, StudentGetSerializer, StudentCategoryGetSerializer
 
 
 class ResultsSetPagination(PageNumberPagination):
@@ -352,5 +353,38 @@ class DeleteProject(APIView):
                     return JsonResponse({"data": "Deleted"}, status=status.HTTP_200_OK)
             else:
                 return JsonResponse({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfile(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+    project_serializer = GetProjectSummarySerializer
+    project_category_serialzier = ProjectCategorySerializer
+    student_serializer = StudentGetSerializer
+    student_category_serializer = StudentCategoryGetSerializer
+
+    def get(self, request):
+        try:
+            _id = request.GET.get('id')
+            user = User.objects.get(id=_id)
+            student = Student.objects.filter(user=user)
+            my_projects = ProjectParticipant.objects.filter(student=user).order_by('isLeader')
+            return_obj = []
+            for proj in my_projects:
+                project = Project.objects.get(id=proj.project.id)
+                project_data = self.project_serializer(instance=project).data
+                _categories = ProjectCategory.objects.filter(project=project_data["id"])
+                categories = self.project_category_serialzier(_categories, many=True)
+                project_data["categories"] = categories.data
+                return_obj.append(project_data)
+            data = self.serializer_class(user).data
+            data["projects"] = return_obj
+            data["student"] = self.student_serializer(student[0]).data
+            student_category = StudentCategory.objects.filter(student=student[0])
+            categories = self.student_category_serializer(student_category, many=True)
+            data["student"]["categories"] = categories.data
+            return JsonResponse({"data": data}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': repr(e)}, status=status.HTTP_400_BAD_REQUEST)

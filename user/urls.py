@@ -1,6 +1,7 @@
 
 from django.urls import path
 
+from projects.views import UserProfile
 from user.views import Login, RevokeToken, RefreshToken, SignUp, Activate, PasswordResetToken, PasswordReset, \
     PasswordChange, UserDetails, CreateStudent, Resend, UpdateStudent, SearchUsers, UpdateUser
 
@@ -18,5 +19,7 @@ urlpatterns = [
     path('update-student-details/', UpdateStudent.as_view(), name='update-student-details'),
     path('resend/', Resend.as_view(), name='resend'),
     path('search-users/', SearchUsers.as_view(), name='search-users'),
-    path('update-user/', UpdateUser.as_view(), name='update-user')
+    path('update-user/', UpdateUser.as_view(), name='update-user'),
+    path('get-user-profile/', UserProfile.as_view(), name='get-user-profile'),
+
 ]

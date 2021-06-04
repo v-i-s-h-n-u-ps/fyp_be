@@ -435,10 +435,8 @@ class SearchUsers(APIView):
     serializer_class = UserSerializer
 
     def get(self, request):
-        print("heree")
         try:
             search = request.GET.get('search')
-            print(search)
             if len(search) > 1:
                 users = User.objects.filter(Q(name__contains=search) | Q(email__contains=search))
                 data = self.serializer_class(users, many=True)

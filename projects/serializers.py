@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from projects.models import Project, ProjectParticipant, ProjectCount, ProjectTask, ProjectCategory
+from user.models import User
 
 
 class CreateProjectSerializer(serializers.ModelSerializer):
@@ -97,3 +98,4 @@ class GetProjectTaskSerializer(serializers.ModelSerializer):
         model = ProjectTask
         fields = '__all__'
         extra_fields = ['type_name', 'username']
+
