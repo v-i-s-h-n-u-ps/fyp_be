@@ -135,7 +135,6 @@ class GetForumsUserIsPartOf(APIView):
                 _user = ForumUser.objects.filter(user=user, forum=_f, active=True)
                 categories = ForumCategory.objects.filter(forum=forum['id'])
                 forum["categories"] = self.category_serializer(categories, many=True).data
-                print(_user[0].user, _user[0].isAdmin)
                 if not _user:
                     forum["isMember"] = False
                     forum["isAdmin"] = False

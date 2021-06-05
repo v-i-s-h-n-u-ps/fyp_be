@@ -241,6 +241,9 @@ class ManageProjectParticipant(APIView):
                 if not _user:
                     return JsonResponse({'error': "User not found"}, status=status.HTTP_400_BAD_REQUEST)
                 if data['action'] == 1:
+                    _participant = ProjectParticipant.objects.filter(project=project[0], student=_user)
+                    if _participant:
+                        return JsonResponse({'error': "User already part of project"}, status=status.HTTP_400_BAD_REQUEST)
                     participant = ProjectParticipant(project=project[0], student=_user)
                     participant.save()
                 else:
