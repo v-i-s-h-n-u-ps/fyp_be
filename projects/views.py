@@ -322,7 +322,7 @@ class GetProjectTask(APIView):
                 tasks = ProjectTask.objects.filter(user=user).order_by('dueDate', 'createdAt')
             else:
                 project = Project.objects.get(id=id)
-                tasks = ProjectTask.objects.filter(user=user, project=project).order_by('dueDate', 'createdAt')
+                tasks = ProjectTask.objects.filter(project=project).order_by('dueDate', 'createdAt')
             # _projects = self.pagination_class(tasks)
             # try:
             #     tasks = self.pagination_class.page(page)
